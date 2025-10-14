@@ -57,7 +57,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
   
   if (!isMounted) {
-    return null;
+    // on the server, we need to return the children wrapped in a div to avoid hydration errors
+    // but without any theme-specific classes
+    return (
+      <html lang="en" suppressHydrationWarning>
+        <body className="font-body antialiased">{children}</body>
+      </html>
+    );
   }
 
   return (

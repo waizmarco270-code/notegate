@@ -43,7 +43,7 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  .dark:root, .dark.theme-classic {
+  .dark.theme-classic {
     --background: 45 10% 12%;
     --foreground: 48 30% 90%;
     --card: 45 10% 14%;
