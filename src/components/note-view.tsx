@@ -32,12 +32,14 @@ export function NoteView() {
 
   if (!activeNote) {
     return (
-      <main className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-secondary/20">
-        <h2 className="text-2xl font-bold">Legendary Notes</h2>
-        <p className="text-muted-foreground mt-2">
-          Select a note to view or create a new one.
-        </p>
-      </main>
+      <div className="flex-1 flex flex-col items-center justify-center text-center p-8 h-full">
+        <div className="bg-card p-8 rounded-lg shadow-sm border">
+          <h2 className="text-2xl font-bold">Legendary Notes</h2>
+          <p className="text-muted-foreground mt-2">
+            Select a note to view or create a new one.
+          </p>
+        </div>
+      </div>
     );
   }
 
@@ -54,9 +56,5 @@ export function NoteView() {
     );
   }
 
-  return (
-    <main className="flex-1 flex flex-col bg-secondary/20">
-      <NoteEditor note={activeNote} />
-    </main>
-  );
+  return <NoteEditor note={activeNote} />;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Star, Lock, Trash2, MoreVertical } from "lucide-react";
+import { Star, Lock, MoreVertical } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -59,16 +59,16 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
 
   return (
-    <div className="flex flex-col h-full bg-card">
-      <header className="p-4 border-b flex items-center justify-between">
+    <div className="flex flex-col h-full bg-card rounded-lg border shadow-sm">
+      <header className="p-4 border-b flex items-center justify-between gap-4">
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled Note"
-          className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-0 h-auto"
+          className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1"
         />
-        <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{wordCount} words</span>
+        <div className="flex items-center gap-1 sm:gap-2">
+            <span className="text-sm text-muted-foreground hidden sm:inline">{wordCount} words</span>
             <Button variant="ghost" size="icon">
                 <Star className="h-4 w-4" />
             </Button>
@@ -107,7 +107,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
 
       <EditorToolbar />
 
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-4 sm:p-6">
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}

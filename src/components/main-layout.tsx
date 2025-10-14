@@ -11,14 +11,11 @@ export function MainLayout() {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    // This effect runs only on the client, after hydration.
-    // It clears any existing notes from local storage and sets the initial empty array.
-    const storedNotes = localStorage.getItem("notes");
-    if (storedNotes && JSON.parse(storedNotes).length > 0) {
-      setNotes(initialNotes);
-      // Also reset the active note ID to avoid showing a deleted note
-      setActiveNoteId(null);
-    }
+    // This effect runs only on the client, after hydration, to clear local storage.
+    // It prevents hydration mismatches by ensuring the client starts with the same empty state as the server.
+    localStorage.removeItem("notes");
+    setNotes(initialNotes);
+    setActiveNoteId(null);
   }, [setNotes, setActiveNoteId]);
 
 
@@ -39,9 +36,9 @@ export function MainLayout() {
         searchTerm={searchTerm}
         onSearchTermChange={setSearchTerm}
       />
-      <div className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col p-4 sm:p-6 md:p-8 bg-secondary/20 overflow-auto">
         <NoteView key={activeNote?.id} />
-      </div>
+      </main>
     </div>
   );
 }
