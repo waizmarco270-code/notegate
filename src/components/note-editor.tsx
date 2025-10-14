@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Star, Lock, MoreVertical, Folder } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Star, Lock, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2 } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -21,8 +21,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface NoteEditorProps {
   note: Note;
@@ -30,11 +31,14 @@ interface NoteEditorProps {
 
 export function NoteEditor({ note }: NoteEditorProps) {
   const { updateNote, deleteNote } = useNotes();
+  const { toast } = useToast();
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isCategoriesDialogOpen, setCategoriesDialogOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(note.isFavorite ?? false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -67,11 +71,43 @@ export function NoteEditor({ note }: NoteEditorProps) {
     updateNote({ id: note.id, isFavorite: newIsFavorite });
   };
   
+  const handleCopyNote = () => {
+    navigator.clipboard.writeText(content);
+    toast({ title: "Note content copied to clipboard." });
+  };
+
+  const handleSelectAll = () => {
+    textareaRef.current?.select();
+  };
+
+  const handleExport = (format: "txt" | "html") => {
+    let fileContent = content;
+    let mimeType = "text/plain";
+    let fileExtension = "txt";
+
+    if (format === "html") {
+      fileContent = `<!DOCTYPE html><html><head><title>${title}</title></head><body><pre>${content}</pre></body></html>`;
+      mimeType = "text/html";
+      fileExtension = "html";
+    }
+
+    const blob = new Blob([fileContent], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title.replace(/\s+/g, '_') || 'note'}.${fileExtension}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({ title: `Note exported as ${fileExtension.toUpperCase()}.` });
+  };
+
   const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
 
   return (
-    <div className="flex flex-col h-full p-4">
-      <div className="flex flex-col flex-1 bg-card border rounded-lg">
+    <div className="flex flex-col h-full">
+      <div className="flex flex-col flex-1 bg-card rounded-lg border">
         <header className="p-4 flex items-center justify-between gap-4">
           <Input
             value={title}
@@ -97,9 +133,33 @@ export function NoteEditor({ note }: NoteEditorProps) {
                       </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={handleCopyNote}>
+                          <Copy className="mr-2 h-4 w-4" />
+                          <span>Copy Note</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={handleSelectAll}>
+                          <TextSelect className="mr-2 h-4 w-4" />
+                          <span>Select All</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={() => handleExport("txt")}>
+                          <FileDown className="mr-2 h-4 w-4" />
+                          <span>Export as TXT</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => handleExport("html")}>
+                          <FileDown className="mr-2 h-4 w-4" />
+                          <span>Export as HTML</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <AlertDialog>
                           <AlertDialogTrigger asChild>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Delete Note</DropdownMenuItem>
+                              <DropdownMenuItem 
+                                  className="text-destructive focus:text-destructive"
+                                  onSelect={(e) => e.preventDefault()}
+                              >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  <span>Delete Note</span>
+                              </DropdownMenuItem>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                               <AlertDialogHeader>
@@ -123,10 +183,11 @@ export function NoteEditor({ note }: NoteEditorProps) {
         
         <div className="flex-1 overflow-auto p-4 sm:p-6">
             <Textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Start writing..."
-            className="h-full w-full border-none shadow-none focus-visible:ring-0 resize-none text-base bg-transparent p-0"
+              ref={textareaRef}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Start writing..."
+              className="h-full w-full border-none shadow-none focus-visible:ring-0 resize-none text-base bg-transparent p-0"
             />
         </div>
       </div>
