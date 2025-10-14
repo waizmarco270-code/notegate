@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +36,14 @@ export function PasswordDialog({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const { toast } = useToast();
+  
+  useEffect(() => {
+    if (!open) {
+      setPassword("");
+      setConfirmPassword("");
+      setError("");
+    }
+  }, [open]);
 
   const handlePrompt = () => {
     if (password === correctPassword) {
@@ -68,7 +76,8 @@ export function PasswordDialog({
     toast({ title: "Password removed." });
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     if (mode === "prompt") {
       handlePrompt();
     } else {
@@ -77,48 +86,53 @@ export function PasswordDialog({
   };
 
   const title = mode === "prompt" ? "Enter Password" : mode === 'update' ? "Update Password" : "Set Password";
-  const description = mode === "prompt" ? "This note is password protected." : "Create a password to secure this note.";
+  const description = mode === "prompt" 
+    ? "This note is password protected. Enter the password to unlock." 
+    : "Create or update the password for this note.";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="password" className="text-right">
-              Password
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              className="col-span-3"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          {(mode === "set" || mode === "update") && (
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="confirm-password" className="text-right">
-                Confirm
+              <Label htmlFor="password" className="text-right">
+                Password
               </Label>
               <Input
-                id="confirm-password"
+                id="password"
                 type="password"
                 className="col-span-3"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoFocus
               />
             </div>
-          )}
-          {error && <p className="text-destructive text-sm col-span-4 text-center">{error}</p>}
-        </div>
-        <DialogFooter>
-          {mode === 'update' && <Button variant="destructive" onClick={handleRemove}>Remove Password</Button>}
-          <Button onClick={handleSubmit}>{mode === 'prompt' ? 'Unlock' : 'Save Password'}</Button>
-        </DialogFooter>
+            {(mode === "set" || mode === "update") && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="confirm-password" className="text-right">
+                  Confirm
+                </Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  className="col-span-3"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </div>
+            )}
+            {error && <p className="text-destructive text-sm col-span-4 text-center">{error}</p>}
+          </div>
+          <DialogFooter>
+            {mode === 'update' && <Button type="button" variant="destructive" onClick={handleRemove}>Remove Password</Button>}
+            <Button type="submit">{mode === 'prompt' ? 'Unlock' : 'Save Password'}</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
