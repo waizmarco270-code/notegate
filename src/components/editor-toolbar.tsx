@@ -11,6 +11,8 @@ import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { cn } from "@/lib/utils";
+import { Switch } from "./ui/switch";
+import { Label } from "./ui/label";
 
 interface EditorToolbarProps {
   fontSize: string;
@@ -21,6 +23,8 @@ interface EditorToolbarProps {
   onColorChange: (color: string) => void;
   onInsertUnorderedList: () => void;
   onInsertOrderedList: () => void;
+  applyToAll: boolean;
+  onApplyToAllChange: (value: boolean) => void;
 }
 
 const colors = [
@@ -28,7 +32,7 @@ const colors = [
     "#FFA500", "#800080", "#008000", "#FFC0CB", "#A52A2A", "#808080", "#FFFFFF"
 ];
 
-export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, currentColor, onColorChange, onInsertUnorderedList, onInsertOrderedList }: EditorToolbarProps) {
+export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, currentColor, onColorChange, onInsertUnorderedList, onInsertOrderedList, applyToAll, onApplyToAllChange }: EditorToolbarProps) {
   const numericFontSize = parseInt(fontSize.replace('px', ''), 10);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   
@@ -192,8 +196,11 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
             </div>
         </PopoverContent>
        </Popover>
+       <Separator orientation="vertical" className="h-6 mx-1" />
+        <div className="flex items-center space-x-2">
+            <Switch id="apply-to-all" checked={applyToAll} onCheckedChange={onApplyToAllChange} />
+            <Label htmlFor="apply-to-all" className="text-xs">Apply to all</Label>
+        </div>
     </div>
   );
 }
-
-    

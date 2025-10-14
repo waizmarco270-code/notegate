@@ -48,6 +48,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [fontSize, setFontSize] = useLocalStorage("editor-font-size", "16px");
   const [fontFamily, setFontFamily] = useLocalStorage("editor-font-family", "Arial");
   const [currentColor, setCurrentColor] = useLocalStorage("editor-current-color", "#000000");
+  const [applyToAll, setApplyToAll] = useState(false);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -154,13 +155,27 @@ export function NoteEditor({ note }: NoteEditorProps) {
     }
   };
   
-  const handleFontSizeChange = (size: string) => {
-    if (!size.endsWith('px')) {
-      setFontSize(`${size}px`);
-    } else {
-      setFontSize(size);
+  const applyStyleToAll = (style: Partial<CSSStyleDeclaration>) => {
+    if (contentRef.current) {
+      Object.assign(contentRef.current.style, style);
+      handleContentBlur();
     }
-  }
+  };
+
+  const handleFontSizeChange = (size: string) => {
+    const finalSize = size.endsWith('px') ? size : `${size}px`;
+    setFontSize(finalSize);
+    if (applyToAll && contentRef.current) {
+      applyStyleToAll({ fontSize: finalSize });
+    }
+  };
+
+  const handleFontFamilyChange = (font: string) => {
+    setFontFamily(font);
+    if (applyToAll && contentRef.current) {
+      applyStyleToAll({ fontFamily: font });
+    }
+  };
   
   const handleContentBlur = () => {
     if (contentRef.current) {
@@ -173,9 +188,17 @@ export function NoteEditor({ note }: NoteEditorProps) {
 
   const handleColorChange = (color: string) => {
     setCurrentColor(color);
+    if (applyToAll) {
+      applyStyleToAll({ color: color });
+      return;
+    }
+
     if(contentRef.current) {
       contentRef.current.focus();
-      document.execCommand('foreColor', false, color);
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        document.execCommand('foreColor', false, color);
+      }
     }
   };
   
@@ -291,11 +314,13 @@ export function NoteEditor({ note }: NoteEditorProps) {
         fontSize={fontSize}
         onFontSizeChange={handleFontSizeChange}
         fontFamily={fontFamily}
-        onFontFamilyChange={setFontFamily}
+        onFontFamilyChange={handleFontFamilyChange}
         currentColor={currentColor}
         onColorChange={handleColorChange}
         onInsertUnorderedList={() => handleInsertList("insertUnorderedList")}
         onInsertOrderedList={() => handleInsertList("insertOrderedList")}
+        applyToAll={applyToAll}
+        onApplyToAllChange={setApplyToAll}
       />
       
       <div className="flex-1 overflow-auto p-4 sm:p-6">
@@ -331,5 +356,3 @@ export function NoteEditor({ note }: NoteEditorProps) {
     </div>
   );
 }
-
-    
