@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 
-type Theme = "default" | "ocean" | "forest" | "rose";
+type Theme = "classic" | "ocean" | "forest" | "rose";
 
 interface ThemeContextType {
   theme: Theme;
@@ -17,7 +17,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useLocalStorage<Theme>("theme", "default");
+  const [theme, setTheme] = useLocalStorage<Theme>("theme", "classic");
   const [isDarkMode, setDarkMode] = useLocalStorage<boolean>("dark-mode", true);
   const [openSettings, setOpenSettings] = useState(false);
   const [isMounted, setIsMounted] = useState(false);

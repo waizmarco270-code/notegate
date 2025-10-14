@@ -1,11 +1,11 @@
 export const themes = [
   {
-    name: 'default',
-    label: 'Default',
+    name: 'classic',
+    label: 'Classic',
     colors: {
-      primary: 'bg-primary',
-      secondary: 'bg-secondary',
-      accent: 'bg-accent',
+      primary: 'bg-[#eab308]',
+      secondary: 'bg-[#fde68a]',
+      accent: 'bg-[#fef3c7]',
     },
   },
   {
