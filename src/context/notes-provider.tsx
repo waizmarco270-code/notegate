@@ -20,10 +20,12 @@ interface NotesContextType {
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
 
+const PREDEFINED_CATEGORIES = ["Personal", "Work", "Ideas"];
+
 export function NotesProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes] = useLocalStorage<Note[]>("notes", initialNotes);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
-  const [allCategories, setAllCategories] = useLocalStorage<string[]>("categories", []);
+  const [userCategories, setUserCategories] = useLocalStorage<string[]>("categories", []);
   
   const activeNote = useMemo(() => {
     const sortedNotes = [...notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
@@ -47,6 +49,18 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     }
   }, [activeNote, activeNoteId, notes]);
 
+  useEffect(() => {
+    // Clear local storage on initial load for a clean slate, one time.
+    const hasCleared = localStorage.getItem('clearedOnce');
+    if (!hasCleared) {
+      localStorage.removeItem('notes');
+      localStorage.removeItem('categories');
+      localStorage.setItem('clearedOnce', 'true');
+      setNotes(initialNotes);
+      setUserCategories([]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const createNote = () => {
     const newNote: Note = {
@@ -87,12 +101,12 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   };
   
   const addCategory = (category: string) => {
-    if (!allCategories.includes(category)) {
-      setAllCategories([...allCategories, category]);
+    if (!userCategories.includes(category) && !PREDEFINED_CATEGORIES.includes(category)) {
+      setUserCategories([...userCategories, category]);
     }
   };
 
-
+  const allCategories = useMemo(() => [...new Set([...PREDEFINED_CATEGORIES, ...userCategories])], [userCategories]);
   const allTags = useMemo(() => [...new Set(notes.flatMap(note => note.tags))], [notes]);
   
   const value = {

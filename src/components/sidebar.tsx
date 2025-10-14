@@ -1,12 +1,13 @@
 "use client";
 
-import { Home, Plus, Search, Moon, Sun, Star, User, Briefcase, Lightbulb, ChevronDown } from "lucide-react";
+import { Home, Plus, Search, Moon, Sun, Star, User, Briefcase, Lightbulb, ChevronDown, Folder } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NoteList } from "@/components/note-list";
 import type { Note } from "@/lib/types";
 import { useTheme } from "@/context/theme-provider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { useNotes } from "@/context/notes-provider";
 
 interface SidebarProps {
   notes: Note[];
@@ -19,6 +20,13 @@ interface SidebarProps {
 
 export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTerm, onSearchTermChange }: SidebarProps) {
   const { isDarkMode, setDarkMode } = useTheme();
+  const { allCategories } = useNotes();
+
+  const categoryIcons: { [key: string]: React.ElementType } = {
+    "Personal": User,
+    "Work": Briefcase,
+    "Ideas": Lightbulb,
+  };
   
   return (
     <aside className="w-80 min-w-[320px] flex flex-col border-r bg-background/50 p-4 space-y-4">
@@ -61,19 +69,16 @@ export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTe
             <Star className="mr-2 h-4 w-4" />
             Favorites
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            Personal
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Briefcase className="mr-2 h-4 w-4" />
-            Work
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Lightbulb className="mr-2 h-4 w-4" />
-            Ideas
-          </DropdownMenuItem>
+          {allCategories.length > 0 && <DropdownMenuSeparator />}
+          {allCategories.map(category => {
+            const Icon = categoryIcons[category] || Folder;
+            return (
+              <DropdownMenuItem key={category}>
+                <Icon className="mr-2 h-4 w-4" />
+                {category}
+              </DropdownMenuItem>
+            );
+          })}
         </DropdownMenuContent>
       </DropdownMenu>
 

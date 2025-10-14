@@ -42,10 +42,6 @@ export function ManageCategoriesDialog({ open, onOpenChange, note, onUpdateCateg
     onOpenChange(false);
   }
 
-  const predefinedCategories = ["Personal", "Work", "Ideas"];
-  const displayedCategories = [...new Set([...predefinedCategories, ...allCategories])];
-
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -82,7 +78,7 @@ export function ManageCategoriesDialog({ open, onOpenChange, note, onUpdateCateg
                 >
                   None
                 </Badge>
-              {displayedCategories.map(cat => (
+              {allCategories.map(cat => (
                 <Badge
                   key={cat}
                   variant={currentCategory === cat ? "default" : "secondary"}
