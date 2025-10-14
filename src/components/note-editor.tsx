@@ -76,7 +76,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled Note"
-          className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-2 h-auto flex-1 bg-transparent"
+          className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1 bg-transparent"
         />
         <div className="flex items-center gap-1 sm:gap-2">
             <span className="text-sm text-muted-foreground hidden sm:inline">{wordCount} words</span>
@@ -120,12 +120,12 @@ export function NoteEditor({ note }: NoteEditorProps) {
 
       <EditorToolbar />
 
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-auto p-4 sm:p-6 bg-card">
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Start writing..."
-          className="h-full w-full border-none shadow-none focus-visible:ring-0 resize-none text-base p-0 bg-transparent"
+          className="h-full w-full shadow-none focus-visible:ring-0 resize-none text-base bg-card"
         />
       </div>
       
