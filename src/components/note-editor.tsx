@@ -38,7 +38,6 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const { updateNote, deleteNote } = useNotes();
   const { toast } = useToast();
   const [title, setTitle] = useState(note.title);
-  const [content, setContent] = useState(note.content);
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isCategoriesDialogOpen, setCategoriesDialogOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(note.isFavorite ?? false);
@@ -51,15 +50,18 @@ export function NoteEditor({ note }: NoteEditorProps) {
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      if (title !== note.title || content !== note.content) {
-        updateNote({ id: note.id, title, content });
-      }
+        if (contentRef.current) {
+            const currentContent = contentRef.current.innerHTML;
+            if (title !== note.title || currentContent !== note.content) {
+                updateNote({ id: note.id, title, content: currentContent });
+            }
+        }
     }, 500);
 
     return () => {
       clearTimeout(handler);
     };
-  }, [title, content, note.id, note.title, note.content, updateNote]);
+  }, [title, note.id, note.title, note.content, updateNote]);
 
   useEffect(() => {
     setIsFavorite(note.isFavorite ?? false);
@@ -67,7 +69,6 @@ export function NoteEditor({ note }: NoteEditorProps) {
   
   useEffect(() => {
     setTitle(note.title);
-    setContent(note.content);
     if (contentRef.current) {
         contentRef.current.innerHTML = note.content || "";
     }
@@ -106,15 +107,20 @@ export function NoteEditor({ note }: NoteEditorProps) {
   };
 
   const handleExport = (format: "txt" | "html") => {
-    let fileContent = content;
+    let fileContent = "";
     let mimeType = "text/plain";
     let fileExtension = "txt";
 
-    if (format === "html" && contentRef.current) {
-      fileContent = `<!DOCTYPE html><html><head><title>${title}</title></head><body><div style="font-size: ${fontSize}; font-family: ${fontFamily};">${contentRef.current.innerHTML}</div></body></html>`;
-      mimeType = "text/html";
-      fileExtension = "html";
+    if (contentRef.current) {
+        if (format === 'html') {
+          fileContent = `<!DOCTYPE html><html><head><title>${title}</title></head><body><div style="font-size: ${fontSize}; font-family: ${fontFamily};">${contentRef.current.innerHTML}</div></body></html>`;
+          mimeType = "text/html";
+          fileExtension = "html";
+        } else {
+            fileContent = contentRef.current.innerText;
+        }
     }
+
 
     const blob = new Blob([fileContent], { type: mimeType });
     const url = URL.createObjectURL(blob);
@@ -129,6 +135,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   };
 
   const handleSummarize = async () => {
+    const content = contentRef.current?.innerHTML || '';
     if (!content) {
       toast({
         variant: "destructive",
@@ -159,26 +166,24 @@ export function NoteEditor({ note }: NoteEditorProps) {
       setFontSize(size);
     }
   }
-
-  const handleContentChange = (e: React.FormEvent<HTMLDivElement>) => {
-    const newContent = e.currentTarget.innerHTML;
-    if (content !== newContent) {
-      setContent(newContent);
+  
+  const handleContentBlur = () => {
+    if (contentRef.current) {
+      const currentContent = contentRef.current.innerHTML;
+      if (currentContent !== note.content) {
+        updateNote({ id: note.id, content: currentContent });
+      }
     }
   };
-  
+
   const handleColorChange = (color: string) => {
     document.execCommand('foreColor', false, color);
-    if (contentRef.current) {
-        setContent(contentRef.current.innerHTML);
-    }
+    handleContentBlur();
   };
   
   const handleInsertList = (type: "insertUnorderedList" | "insertOrderedList") => {
     document.execCommand(type, false, undefined);
-    if (contentRef.current) {
-        setContent(contentRef.current.innerHTML);
-    }
+    handleContentBlur();
   };
 
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
@@ -295,8 +300,8 @@ export function NoteEditor({ note }: NoteEditorProps) {
           <div
             ref={contentRef}
             contentEditable={true}
-            onInput={handleContentChange}
-            dangerouslySetInnerHTML={{ __html: content }}
+            onBlur={handleContentBlur}
+            dangerouslySetInnerHTML={{ __html: note.content }}
             data-placeholder="Start writing..."
             className="h-full w-full outline-none text-base empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground"
             style={{ fontSize, fontFamily }}
@@ -324,7 +329,3 @@ export function NoteEditor({ note }: NoteEditorProps) {
     </div>
   );
 }
-
-    
-
-    
