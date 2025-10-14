@@ -8,6 +8,7 @@ import type { Note } from "@/lib/types";
 import { useTheme } from "@/context/theme-provider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useNotes } from "@/context/notes-provider";
+import { NotesGateLogo } from "./icons";
 
 interface SidebarProps {
   notes: Note[];
@@ -59,7 +60,10 @@ export function Sidebar({
   return (
     <aside className="w-80 min-w-[320px] flex flex-col bg-background/50 p-4 space-y-4">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Legendary Notes</h1>
+        <div className="flex items-center gap-2">
+          <NotesGateLogo className="w-7 h-7 text-primary" />
+          <h1 className="text-2xl font-bold text-foreground">NotesGate</h1>
+        </div>
         <div className="flex items-center">
           <Button variant="ghost" size="icon" onClick={() => setDarkMode(!isDarkMode)} aria-label="Toggle theme">
               {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
