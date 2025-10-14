@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 export function EditorToolbar() {
   return (
-    <div className="p-2 border-b flex items-center gap-2 flex-wrap bg-card rounded-t-lg">
+    <div className="p-2 border-b flex items-center gap-2 flex-wrap bg-card">
       <Select defaultValue="12px">
         <SelectTrigger className="w-24 h-8 text-xs">
           <SelectValue placeholder="Size" />
