@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Input } from "./ui/input";
 
 interface EditorToolbarProps {
   fontSize: string;
@@ -16,18 +17,24 @@ interface EditorToolbarProps {
 export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange }: EditorToolbarProps) {
   return (
     <div className="p-2 border-y flex items-center gap-2 flex-wrap bg-card">
-      <Select value={fontSize} onValueChange={onFontSizeChange}>
-        <SelectTrigger className="w-24 h-8 text-xs">
-          <SelectValue placeholder="Size" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="10px">10</SelectItem>
-          <SelectItem value="12px">12</SelectItem>
-          <SelectItem value="14px">14</SelectItem>
-          <SelectItem value="16px">16</SelectItem>
-          <SelectItem value="20px">20</SelectItem>
-        </SelectContent>
-      </Select>
+      <div className="flex items-center gap-1 w-24">
+        <Input
+            type="number"
+            value={fontSize.replace('px', '')}
+            onChange={(e) => {
+                const size = parseInt(e.target.value);
+                if (size > 0 && size <= 200) {
+                    onFontSizeChange(`${size}px`);
+                } else if (e.target.value === "") {
+                    onFontSizeChange("12px");
+                }
+            }}
+            className="w-full h-8 text-xs"
+            max={200}
+            min={1}
+            placeholder="Size"
+        />
+      </div>
       
       <Select value={fontFamily} onValueChange={onFontFamilyChange}>
         <SelectTrigger className="w-36 h-8 text-xs">

@@ -85,8 +85,10 @@ export function NoteEditor({ note }: NoteEditorProps) {
   };
   
   const handleCopyNote = () => {
-    navigator.clipboard.writeText(content);
-    toast({ title: "Note content copied to clipboard." });
+    if (contentRef.current) {
+        navigator.clipboard.writeText(contentRef.current.innerText);
+        toast({ title: "Note content copied to clipboard." });
+    }
   };
 
   const handleSelectAll = () => {
@@ -104,8 +106,8 @@ export function NoteEditor({ note }: NoteEditorProps) {
     let mimeType = "text/plain";
     let fileExtension = "txt";
 
-    if (format === "html") {
-      fileContent = `<!DOCTYPE html><html><head><title>${title}</title></head><body><div>${content.replace(/\n/g, '<br>')}</div></body></html>`;
+    if (format === "html" && contentRef.current) {
+      fileContent = `<!DOCTYPE html><html><head><title>${title}</title></head><body><div>${contentRef.current.innerHTML}</div></body></html>`;
       mimeType = "text/html";
       fileExtension = "html";
     }
@@ -145,6 +147,14 @@ export function NoteEditor({ note }: NoteEditorProps) {
       });
     }
   };
+  
+  const handleFontSizeChange = (size: string) => {
+    if (!size.endsWith('px')) {
+      setFontSize(`${size}px`);
+    } else {
+      setFontSize(size);
+    }
+  }
 
   const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
 
@@ -227,7 +237,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
       
       <EditorToolbar 
         fontSize={fontSize}
-        onFontSizeChange={setFontSize}
+        onFontSizeChange={handleFontSizeChange}
         fontFamily={fontFamily}
         onFontFamilyChange={setFontFamily}
       />
