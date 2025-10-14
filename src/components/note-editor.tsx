@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock } from "lucide-react";
+import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,8 @@ import { useToast } from "@/hooks/use-toast";
 import { summarizeNoteAction } from "@/lib/actions";
 import { SummaryDialog } from "./summary-dialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { CategoryPopover } from "./category-popover";
+import { Badge } from "./ui/badge";
 
 interface NoteEditorProps {
   note: Note;
@@ -65,8 +67,9 @@ export function NoteEditor({ note }: NoteEditorProps) {
   useEffect(() => {
     setTitle(note.title);
     setContent(note.content);
-    if (contentRef.current && contentRef.current.innerText !== note.content) {
-      contentRef.current.innerText = note.content;
+    if (contentRef.current && contentRef.current.innerHTML !== note.content) {
+        // Use innerHTML to preserve formatting
+        contentRef.current.innerHTML = note.content || "";
     }
   }, [note]);
 
@@ -157,7 +160,12 @@ export function NoteEditor({ note }: NoteEditorProps) {
     }
   }
 
-  const wordCount = content ? content.trim().split(/\s+/).filter(Boolean).length : 0;
+  const handleContentChange = (e: React.FormEvent<HTMLDivElement>) => {
+    // Use innerHTML to capture rich text content
+    setContent(e.currentTarget.innerHTML);
+  };
+
+  const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
   const isLocked = note.password !== null;
 
   return (
@@ -180,9 +188,6 @@ export function NoteEditor({ note }: NoteEditorProps) {
             </Button>
             <Button variant="ghost" size="icon" onClick={() => setPasswordDialogOpen(true)}>
                 {isLocked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => setCategoriesDialogOpen(true)}>
-                <Folder className="h-4 w-4" />
             </Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -236,6 +241,26 @@ export function NoteEditor({ note }: NoteEditorProps) {
             </DropdownMenu>
         </div>
       </header>
+
+      <div className="px-4 pb-2 flex items-center gap-2">
+        <CategoryPopover
+            note={note}
+            onUpdateCategory={handleCategoryUpdate}
+            onOpenManageCategories={() => setCategoriesDialogOpen(true)}
+        >
+            {note.category ? (
+                <Badge variant="secondary" className="cursor-pointer hover:bg-muted">
+                    <Tag className="h-3 w-3 mr-1" />
+                    {note.category}
+                </Badge>
+            ) : (
+                <Button variant="ghost" size="sm" className="text-muted-foreground">
+                    <Folder className="h-4 w-4 mr-2" />
+                    Category
+                </Button>
+            )}
+        </CategoryPopover>
+      </div>
       
       <EditorToolbar 
         fontSize={fontSize}
@@ -248,7 +273,8 @@ export function NoteEditor({ note }: NoteEditorProps) {
           <div
             ref={contentRef}
             contentEditable={true}
-            onInput={(e) => setContent(e.currentTarget.innerText)}
+            onInput={handleContentChange}
+            dangerouslySetInnerHTML={{ __html: content || "" }}
             data-placeholder="Start writing..."
             className="h-full w-full outline-none text-base empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground"
             style={{ fontSize, fontFamily }}
