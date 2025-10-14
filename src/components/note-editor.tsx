@@ -173,6 +173,13 @@ export function NoteEditor({ note }: NoteEditorProps) {
         setContent(contentRef.current.innerHTML);
     }
   };
+  
+  const handleInsertList = (type: "insertUnorderedList" | "insertOrderedList") => {
+    document.execCommand(type, false, undefined);
+    if (contentRef.current) {
+        setContent(contentRef.current.innerHTML);
+    }
+  };
 
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
   const isLocked = note.password !== null;
@@ -280,6 +287,8 @@ export function NoteEditor({ note }: NoteEditorProps) {
         fontFamily={fontFamily}
         onFontFamilyChange={setFontFamily}
         onColorChange={handleColorChange}
+        onInsertUnorderedList={() => handleInsertList("insertUnorderedList")}
+        onInsertOrderedList={() => handleInsertList("insertOrderedList")}
       />
       
       <div className="flex-1 overflow-auto p-4 sm:p-6">
@@ -287,6 +296,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
             ref={contentRef}
             contentEditable={true}
             onInput={handleContentChange}
+            dangerouslySetInnerHTML={{ __html: content }}
             data-placeholder="Start writing..."
             className="h-full w-full outline-none text-base empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground"
             style={{ fontSize, fontFamily }}
@@ -314,5 +324,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
     </div>
   );
 }
+
+    
 
     

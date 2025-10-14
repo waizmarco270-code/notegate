@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette, CaseSensitive, Heading, Pilcrow } from "lucide-react";
@@ -15,6 +16,8 @@ interface EditorToolbarProps {
   fontFamily: string;
   onFontFamilyChange: (font: string) => void;
   onColorChange: (color: string) => void;
+  onInsertUnorderedList: () => void;
+  onInsertOrderedList: () => void;
 }
 
 const colors = [
@@ -22,7 +25,7 @@ const colors = [
     "#FFA500", "#800080", "#008000", "#FFC0CB", "#A52A2A", "#808080", "#FFFFFF"
 ];
 
-export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, onColorChange }: EditorToolbarProps) {
+export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, onColorChange, onInsertUnorderedList, onInsertOrderedList }: EditorToolbarProps) {
   const numericFontSize = parseInt(fontSize.replace('px', ''), 10);
   
   const handleManualSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,10 +152,10 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
-      <Button variant="ghost" size="icon" className="h-8 w-8">
+      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onInsertUnorderedList}>
         <List className="h-4 w-4" />
       </Button>
-       <Button variant="ghost" size="icon" className="h-8 w-8">
+       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onInsertOrderedList}>
         <ListOrdered className="h-4 w-4" />
       </Button>
 
@@ -180,3 +183,5 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
     </div>
   );
 }
+
+    
