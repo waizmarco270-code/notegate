@@ -1,9 +1,10 @@
 "use client";
 
-import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette } from "lucide-react";
+import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette, CaseSensitive, Heading, Pilcrow } from "lucide-react";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 
 export function EditorToolbar() {
@@ -39,39 +40,80 @@ export function EditorToolbar() {
       
       <Separator orientation="vertical" className="h-6 mx-1" />
 
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Bold className="h-4 w-4" />
-      </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Italic className="h-4 w-4" />
-      </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Underline className="h-4 w-4" />
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+                <CaseSensitive className="h-4 w-4" />
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="flex gap-1">
+            <DropdownMenuItem>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Bold className="h-4 w-4" />
+                </Button>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Italic className="h-4 w-4" />
+                </Button>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Underline className="h-4 w-4" />
+                </Button>
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       
-      <Separator orientation="vertical" className="h-6 mx-1" />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Heading className="h-4 w-4" />
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="flex gap-1">
+            <DropdownMenuItem>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Heading1 className="h-4 w-4" />
+                </Button>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Heading2 className="h-4 w-4" />
+                </Button>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Heading3 className="h-4 w-4" />
+                </Button>
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Heading1 className="h-4 w-4" />
-      </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Heading2 className="h-4 w-4" />
-      </Button>
-       <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Heading3 className="h-4 w-4" />
-      </Button>
-
-      <Separator orientation="vertical" className="h-6 mx-1" />
-
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <AlignLeft className="h-4 w-4" />
-      </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <AlignCenter className="h-4 w-4" />
-      </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <AlignRight className="h-4 w-4" />
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Pilcrow className="h-4 w-4" />
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="flex gap-1">
+            <DropdownMenuItem>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <AlignLeft className="h-4 w-4" />
+                </Button>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <AlignCenter className="h-4 w-4" />
+                </Button>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <AlignRight className="h-4 w-4" />
+                </Button>
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
