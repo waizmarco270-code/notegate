@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { summarizeNoteAction } from "@/lib/actions";
 import { SummaryDialog } from "./summary-dialog";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 interface NoteEditorProps {
   note: Note;
@@ -42,8 +43,8 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summary, setSummary] = useState("");
   const [isSummaryDialogOpen, setSummaryDialogOpen] = useState(false);
-  const [fontSize, setFontSize] = useState("12px");
-  const [fontFamily, setFontFamily] = useState("Arial");
+  const [fontSize, setFontSize] = useLocalStorage("editor-font-size", "16px");
+  const [fontFamily, setFontFamily] = useLocalStorage("editor-font-family", "Arial");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -107,7 +108,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
     let fileExtension = "txt";
 
     if (format === "html" && contentRef.current) {
-      fileContent = `<!DOCTYPE html><html><head><title>${title}</title></head><body><div>${contentRef.current.innerHTML}</div></body></html>`;
+      fileContent = `<!DOCTYPE html><html><head><title>${title}</title></head><body><div style="font-size: ${fontSize}; font-family: ${fontFamily};">${contentRef.current.innerHTML}</div></body></html>`;
       mimeType = "text/html";
       fileExtension = "html";
     }
@@ -159,90 +160,92 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
 
   return (
-    <div className="flex flex-col h-full bg-card">
-      <header className="p-4 flex items-center justify-between gap-4">
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Untitled Note"
-          className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1 bg-transparent"
+    <div className="flex flex-col h-full">
+      <div className="bg-card rounded-t-lg border-x border-t">
+        <header className="p-4 flex items-center justify-between gap-4">
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Untitled Note"
+            className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1 bg-transparent"
+          />
+          <div className="flex items-center gap-1 sm:gap-2">
+              <Button onClick={handleSummarize} disabled={isSummarizing} variant="ghost" size="sm">
+                <Sparkles className="h-4 w-4 mr-2" />
+                {isSummarizing ? "Summarizing..." : "Summarize"}
+              </Button>
+              <span className="text-sm text-muted-foreground hidden sm:inline">{wordCount} words</span>
+              <Button variant="ghost" size="icon" onClick={toggleFavorite}>
+                  <Star className={cn("h-4 w-4", isFavorite ? "text-yellow-400 fill-yellow-400" : "")} />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setPasswordDialogOpen(true)}>
+                  <Lock className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setCategoriesDialogOpen(true)}>
+                  <Folder className="h-4 w-4" />
+              </Button>
+              <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                      </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={handleCopyNote}>
+                          <Copy className="mr-2 h-4 w-4" />
+                          <span>Copy Note</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={handleSelectAll}>
+                          <TextSelect className="mr-2 h-4 w-4" />
+                          <span>Select All</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={() => handleExport("txt")}>
+                          <FileDown className="mr-2 h-4 w-4" />
+                          <span>Export as TXT</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => handleExport("html")}>
+                          <FileDown className="mr-2 h-4 w-4" />
+                          <span>Export as HTML</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                              <DropdownMenuItem 
+                                  className="text-destructive focus:text-destructive"
+                                  onSelect={(e) => e.preventDefault()}
+                              >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  <span>Delete Note</span>
+                              </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                              <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                  This will permanently delete the note. This action cannot be undone.
+                              </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => deleteNote(note.id)}>Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                          </AlertDialogContent>
+                      </AlertDialog>
+                  </DropdownMenuContent>
+              </DropdownMenu>
+          </div>
+        </header>
+        
+        <EditorToolbar 
+          fontSize={fontSize}
+          onFontSizeChange={handleFontSizeChange}
+          fontFamily={fontFamily}
+          onFontFamilyChange={setFontFamily}
         />
-        <div className="flex items-center gap-1 sm:gap-2">
-            <Button onClick={handleSummarize} disabled={isSummarizing} variant="ghost" size="sm">
-              <Sparkles className="h-4 w-4 mr-2" />
-              {isSummarizing ? "Summarizing..." : "Summarize"}
-            </Button>
-            <span className="text-sm text-muted-foreground hidden sm:inline">{wordCount} words</span>
-            <Button variant="ghost" size="icon" onClick={toggleFavorite}>
-                <Star className={cn("h-4 w-4", isFavorite ? "text-yellow-400 fill-yellow-400" : "")} />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => setPasswordDialogOpen(true)}>
-                <Lock className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => setCategoriesDialogOpen(true)}>
-                <Folder className="h-4 w-4" />
-            </Button>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={handleCopyNote}>
-                        <Copy className="mr-2 h-4 w-4" />
-                        <span>Copy Note</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={handleSelectAll}>
-                        <TextSelect className="mr-2 h-4 w-4" />
-                        <span>Select All</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => handleExport("txt")}>
-                        <FileDown className="mr-2 h-4 w-4" />
-                        <span>Export as TXT</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => handleExport("html")}>
-                        <FileDown className="mr-2 h-4 w-4" />
-                        <span>Export as HTML</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <DropdownMenuItem 
-                                className="text-destructive focus:text-destructive"
-                                onSelect={(e) => e.preventDefault()}
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                <span>Delete Note</span>
-                            </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This will permanently delete the note. This action cannot be undone.
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteNote(note.id)}>Delete</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-      </header>
+      </div>
       
-      <EditorToolbar 
-        fontSize={fontSize}
-        onFontSizeChange={handleFontSizeChange}
-        fontFamily={fontFamily}
-        onFontFamilyChange={setFontFamily}
-      />
-      
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-auto p-4 sm:p-6 bg-card rounded-b-lg border-x border-b">
           <div
             ref={contentRef}
             contentEditable={true}
