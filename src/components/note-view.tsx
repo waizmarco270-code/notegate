@@ -83,5 +83,5 @@ export function NoteView() {
     );
   }
 
-  return <NoteEditor note={activeNote} />;
+  return <div className="h-full w-full p-0 md:p-4"><NoteEditor note={activeNote} /></div>;
 }

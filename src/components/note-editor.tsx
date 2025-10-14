@@ -225,12 +225,12 @@ export function NoteEditor({ note }: NoteEditorProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Untitled Note"
-            className="text-4xl font-bold font-headline border-none shadow-none focus-visible:ring-0 p-0 h-auto w-full bg-transparent tracking-wide text-primary"
+            className="text-2xl md:text-4xl font-bold font-headline border-none shadow-none focus-visible:ring-0 p-0 h-auto w-full bg-transparent tracking-wide text-primary"
           />
            <div className="absolute bottom-0 left-0 h-0.5 w-full bg-transparent group-focus-within:bg-gradient-to-r from-transparent via-primary to-transparent group-focus-within:animate-underline-grow" />
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
-            <Button onClick={handleSummarize} disabled={isSummarizing} variant="ghost" size="sm">
+            <Button onClick={handleSummarize} disabled={isSummarizing} variant="ghost" size="sm" className="hidden sm:inline-flex">
               <Sparkles className="h-4 w-4 mr-2" />
               {isSummarizing ? "Summarizing..." : "Summarize"}
             </Button>
@@ -248,6 +248,10 @@ export function NoteEditor({ note }: NoteEditorProps) {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                     <DropdownMenuItem onSelect={handleSummarize} disabled={isSummarizing} className="sm:hidden">
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        <span>{isSummarizing ? "Summarizing..." : "Summarize"}</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={handleCopyNote}>
                         <Copy className="mr-2 h-4 w-4" />
                         <span>Copy Note</span>

@@ -7,6 +7,15 @@ import { useNotes } from "@/context/notes-provider";
 import { PasswordDialog } from "@/components/password-dialog";
 import type { Note } from "@/lib/types";
 import { ManageCategoriesDialog } from "./manage-categories-dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "./ui/button";
+import { PanelLeft } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+
 
 export function MainLayout() {
   const { notes, createNote, activeNote, setActiveNoteId, deleteNote, updateNote } = useNotes();
@@ -15,6 +24,9 @@ export function MainLayout() {
   const [isClient, setIsClient] = useState(false);
   const [passwordNote, setPasswordNote] = useState<Note | null>(null);
   const [categoryNote, setCategoryNote] = useState<Note | null>(null);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
+
 
   useEffect(() => {
     setIsClient(true);
@@ -43,6 +55,9 @@ export function MainLayout() {
     } else {
       setCategoryFilter(category);
     }
+     if (isMobile) {
+      setSidebarOpen(false);
+    }
   };
 
   const handleToggleFavorite = (id: string, isFavorite: boolean) => {
@@ -61,19 +76,32 @@ export function MainLayout() {
         updateNote({ id: categoryNote.id, category });
     }
   };
+  
+  const handleSelectNote = (id: string) => {
+    setActiveNoteId(id);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleNewNote = () => {
+    createNote();
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
 
   if (!isClient) {
     return null;
   }
-
-  return (
-    <>
-      <div className="flex h-screen w-full bg-background overflow-hidden">
-        <Sidebar
+  
+  const sidebarContent = (
+      <Sidebar
           notes={filteredNotes}
           activeNoteId={activeNote?.id ?? null}
-          onSelectNote={setActiveNoteId}
-          onNewNote={createNote}
+          onSelectNote={handleSelectNote}
+          onNewNote={handleNewNote}
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
           onSelectCategory={handleSelectCategory}
@@ -83,7 +111,29 @@ export function MainLayout() {
           onSetPassword={setPasswordNote}
           onSetCategory={setCategoryNote}
         />
+  )
+
+  return (
+    <>
+      <div className="flex h-screen w-full bg-background overflow-hidden">
+        {isMobile ? (
+          <Sheet open={isSidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="absolute top-2 left-2 z-10">
+                    <PanelLeft className="h-5 w-5" />
+                    <span className="sr-only">Toggle Sidebar</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-80">
+                {sidebarContent}
+            </SheetContent>
+          </Sheet>
+        ) : (
+          sidebarContent
+        )}
+
         <main className="flex-1 flex flex-col overflow-auto">
+          {isMobile && <div className="h-12" />}
           <NoteView key={activeNote?.id} />
         </main>
       </div>
