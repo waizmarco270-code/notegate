@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Plus, Search, Moon, Sun, Star, User, Briefcase, Lightbulb, ChevronDown, Folder } from "lucide-react";
+import { Home, Plus, Search, Moon, Sun, Star, User, Briefcase, Lightbulb, ChevronDown, Folder, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NoteList } from "@/components/note-list";
@@ -22,7 +22,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTerm, onSearchTermChange, onSelectCategory, activeCategory }: SidebarProps) {
-  const { isDarkMode, setDarkMode } = useTheme();
+  const { isDarkMode, setDarkMode, setOpenSettings } = useTheme();
   const { allCategories } = useNotes();
 
   const categoryIcons: { [key: string]: React.ElementType } = {
@@ -44,9 +44,14 @@ export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTe
     <aside className="w-80 min-w-[320px] flex flex-col bg-background/50 p-4 space-y-4">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Legendary Notes</h1>
-        <Button variant="ghost" size="icon" onClick={() => setDarkMode(!isDarkMode)} aria-label="Toggle theme">
-            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </Button>
+        <div className="flex items-center">
+          <Button variant="ghost" size="icon" onClick={() => setDarkMode(!isDarkMode)} aria-label="Toggle theme">
+              {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => setOpenSettings(true)} aria-label="Open settings">
+              <Settings className="h-5 w-5" />
+          </Button>
+        </div>
       </header>
 
       <Button variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={onNewNote}>
