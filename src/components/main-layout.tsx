@@ -6,7 +6,7 @@ import { NoteView } from "@/components/note-view";
 import { useNotes } from "@/context/notes-provider";
 
 export function MainLayout() {
-  const { notes, createNote, activeNote, setActiveNoteId, setNotes } = useNotes();
+  const { notes, createNote, activeNote, setActiveNoteId } = useNotes();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredNotes = notes
@@ -26,7 +26,7 @@ export function MainLayout() {
         searchTerm={searchTerm}
         onSearchTermChange={setSearchTerm}
       />
-      <main className="flex-1 flex flex-col bg-secondary/20 overflow-auto p-4 sm:p-6 md:p-8">
+      <main className="flex-1 flex flex-col bg-secondary/20 overflow-auto">
         <NoteView key={activeNote?.id} />
       </main>
     </div>
