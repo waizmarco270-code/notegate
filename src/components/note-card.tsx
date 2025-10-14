@@ -26,8 +26,9 @@ export function NoteCard({ note, isActive, onClick, onDelete, onToggleFavorite, 
   return (
     <Card
       className={cn(
-        "cursor-pointer transition-colors hover:bg-secondary/50 border-transparent relative group",
-        isActive ? "bg-secondary" : "bg-card"
+        "cursor-pointer transition-colors hover:bg-secondary/50 relative group border",
+        isActive ? "bg-secondary" : "bg-card",
+        note.isFavorite ? "border-yellow-400/50" : "border-transparent"
       )}
       onClick={onClick}
     >
