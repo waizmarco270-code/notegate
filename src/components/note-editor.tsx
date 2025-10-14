@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -67,8 +68,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   useEffect(() => {
     setTitle(note.title);
     setContent(note.content);
-    if (contentRef.current && contentRef.current.innerHTML !== note.content) {
-        // Use innerHTML to preserve formatting
+    if (contentRef.current) {
         contentRef.current.innerHTML = note.content || "";
     }
   }, [note]);
@@ -161,14 +161,14 @@ export function NoteEditor({ note }: NoteEditorProps) {
   }
 
   const handleContentChange = (e: React.FormEvent<HTMLDivElement>) => {
-    // Use innerHTML to capture rich text content
-    setContent(e.currentTarget.innerHTML);
+    const newContent = e.currentTarget.innerHTML;
+    if (content !== newContent) {
+      setContent(newContent);
+    }
   };
   
   const handleColorChange = (color: string) => {
     document.execCommand('foreColor', false, color);
-    // After command execution, the content might have changed,
-    // so we need to update our state.
     if (contentRef.current) {
         setContent(contentRef.current.innerHTML);
     }
@@ -287,7 +287,6 @@ export function NoteEditor({ note }: NoteEditorProps) {
             ref={contentRef}
             contentEditable={true}
             onInput={handleContentChange}
-            dangerouslySetInnerHTML={{ __html: content || "" }}
             data-placeholder="Start writing..."
             className="h-full w-full outline-none text-base empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground"
             style={{ fontSize, fontFamily }}
@@ -315,3 +314,5 @@ export function NoteEditor({ note }: NoteEditorProps) {
     </div>
   );
 }
+
+    
