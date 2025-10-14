@@ -31,26 +31,16 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   const [userCategories, setUserCategories] = useLocalStorage<string[]>("categories", []);
   
   const activeNote = useMemo(() => {
-    const sortedNotes = [...notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-    const currentNote = sortedNotes.find((n) => n.id === activeNoteId);
-    
-    if (activeNoteId === null && sortedNotes.length > 0) {
-      setActiveNoteId(sortedNotes[0].id);
-      return sortedNotes[0];
-    }
-    
-    return currentNote ?? (sortedNotes.length > 0 ? sortedNotes[0] : null);
+    return notes.find((n) => n.id === activeNoteId) ?? null;
   }, [notes, activeNoteId]);
   
   useEffect(() => {
-    if (activeNote && activeNote.id !== activeNoteId) {
-      setActiveNoteId(activeNote.id);
+    if (activeNoteId === null && notes.length > 0) {
+        const sortedNotes = [...notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        // Do not automatically select a note if we are on the home screen
+        // setActiveNoteId(sortedNotes[0].id);
     }
-     if (!activeNote && notes.length > 0) {
-      const sortedNotes = [...notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-      setActiveNoteId(sortedNotes[0].id);
-    }
-  }, [activeNote, activeNoteId, notes]);
+  }, [activeNoteId, notes]);
 
   const createNote = () => {
     const newNote: Note = {

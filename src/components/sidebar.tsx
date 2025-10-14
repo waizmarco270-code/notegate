@@ -41,7 +41,7 @@ export function Sidebar({
   onSetCategory
 }: SidebarProps) {
   const { isDarkMode, setDarkMode, setOpenSettings } = useTheme();
-  const { allCategories } = useNotes();
+  const { allCategories, setActiveNoteId } = useNotes();
 
   const categoryIcons: { [key: string]: React.ElementType } = {
     "Personal": User,
@@ -56,6 +56,11 @@ export function Sidebar({
   }
   
   const ActiveIcon = categoryIcons[getActiveCategoryLabel()] || Folder;
+
+  const handleGoHome = () => {
+    setActiveNoteId(null);
+    onSelectCategory(null);
+  };
 
   return (
     <aside className="w-80 min-w-[320px] flex flex-col bg-background/50 p-4 space-y-4">
@@ -96,11 +101,18 @@ export function Sidebar({
 
       <nav className="flex flex-col gap-2">
          <Button 
+            variant={"ghost"}
+            className="w-full justify-start"
+            onClick={handleGoHome}
+          >
+            <Home className="mr-2 h-4 w-4" /> Home
+        </Button>
+         <Button 
             variant={activeCategory === null ? "secondary" : "ghost"}
             className="w-full justify-start"
             onClick={() => onSelectCategory("All Notes")}
           >
-            <Home className="mr-2 h-4 w-4" /> All Notes
+            <Folder className="mr-2 h-4 w-4" /> All Notes
         </Button>
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
