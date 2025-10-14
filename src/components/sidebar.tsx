@@ -50,13 +50,6 @@ export function Sidebar({
     "Favorites": Star,
   };
   
-  const getActiveCategoryLabel = () => {
-    if (activeCategory === null) return "All Notes";
-    return activeCategory;
-  }
-  
-  const ActiveIcon = categoryIcons[getActiveCategoryLabel()] || Folder;
-
   const handleGoHome = () => {
     setActiveNoteId(null);
     onSelectCategory(null);
@@ -99,7 +92,7 @@ export function Sidebar({
         />
       </div>
 
-      <nav className="flex flex-col gap-2">
+      <nav className="flex flex-col gap-1">
          <Button 
             variant={"ghost"}
             className="w-full justify-start"
@@ -118,10 +111,14 @@ export function Sidebar({
             <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="w-full justify-start">
                 <Folder className="mr-2 h-4 w-4" /> Categories
+                <ChevronDown className="h-4 w-4 ml-auto" />
             </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-            <DropdownMenuItem onClick={() => onSelectCategory("Favorites")}>
+            <DropdownMenuItem 
+              onClick={() => onSelectCategory("Favorites")}
+              className={cn(activeCategory === "Favorites" && "bg-secondary")}
+            >
                 <Star className="mr-2 h-4 w-4" />
                 Favorites
             </DropdownMenuItem>
@@ -129,7 +126,11 @@ export function Sidebar({
             {allCategories.map(category => {
                 const Icon = categoryIcons[category] || Folder;
                 return (
-                <DropdownMenuItem key={category} onClick={() => onSelectCategory(category)}>
+                <DropdownMenuItem 
+                  key={category} 
+                  onClick={() => onSelectCategory(category)}
+                  className={cn(activeCategory === category && "bg-secondary")}
+                >
                     <Icon className="mr-2 h-4 w-4" />
                     {category}
                 </DropdownMenuItem>
