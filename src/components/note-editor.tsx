@@ -76,7 +76,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled Note"
-          className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1 bg-transparent"
+          className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-2 h-auto flex-1 bg-transparent"
         />
         <div className="flex items-center gap-1 sm:gap-2">
             <span className="text-sm text-muted-foreground hidden sm:inline">{wordCount} words</span>
