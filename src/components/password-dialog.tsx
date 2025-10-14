@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "./ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface PasswordDialogProps {
   open: boolean;
@@ -99,6 +101,14 @@ export function PasswordDialog({
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            {(mode === "set" || mode === "update") && (
+                <Alert variant="default" className="bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800">
+                    <AlertCircle className="h-4 w-4 !text-yellow-600 dark:!text-yellow-400" />
+                    <AlertDescription className="text-yellow-700 dark:text-yellow-300 text-xs">
+                        Please save this password somewhere safe. There is no way to recover a forgotten password.
+                    </AlertDescription>
+                </Alert>
+            )}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="password" className="text-right">
                 Password
