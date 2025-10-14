@@ -164,6 +164,15 @@ export function NoteEditor({ note }: NoteEditorProps) {
     // Use innerHTML to capture rich text content
     setContent(e.currentTarget.innerHTML);
   };
+  
+  const handleColorChange = (color: string) => {
+    document.execCommand('foreColor', false, color);
+    // After command execution, the content might have changed,
+    // so we need to update our state.
+    if (contentRef.current) {
+        setContent(contentRef.current.innerHTML);
+    }
+  };
 
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
   const isLocked = note.password !== null;
@@ -270,6 +279,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         onFontSizeChange={handleFontSizeChange}
         fontFamily={fontFamily}
         onFontFamilyChange={setFontFamily}
+        onColorChange={handleColorChange}
       />
       
       <div className="flex-1 overflow-auto p-4 sm:p-6">

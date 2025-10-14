@@ -7,15 +7,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface EditorToolbarProps {
   fontSize: string;
   onFontSizeChange: (size: string) => void;
   fontFamily: string;
   onFontFamilyChange: (font: string) => void;
+  onColorChange: (color: string) => void;
 }
 
-export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange }: EditorToolbarProps) {
+const colors = [
+    "#000000", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF",
+    "#FFA500", "#800080", "#008000", "#FFC0CB", "#A52A2A", "#808080", "#FFFFFF"
+];
+
+export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, onColorChange }: EditorToolbarProps) {
   const numericFontSize = parseInt(fontSize.replace('px', ''), 10);
   
   const handleManualSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -150,9 +157,26 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
       </Button>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
-       <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Palette className="h-4 w-4" />
-      </Button>
+       <Popover>
+        <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Palette className="h-4 w-4" />
+            </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-2">
+            <div className="grid grid-cols-7 gap-1">
+                {colors.map(color => (
+                    <Button
+                        key={color}
+                        variant="outline"
+                        className="h-6 w-6 p-0 border"
+                        style={{ backgroundColor: color }}
+                        onClick={() => onColorChange(color)}
+                    />
+                ))}
+            </div>
+        </PopoverContent>
+       </Popover>
     </div>
   );
 }
