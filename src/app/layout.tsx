@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './providers';
-import { SecureNoteLogo, NotesGateLogo } from '@/components/icons';
+import { SecureNoteLogo } from '@/components/icons';
 
 export const metadata: Metadata = {
   title: 'NotesGate',
@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
        <head>
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/logo.jpg" type="image/jpeg" />
       </head>
       <body className="antialiased">
         <Providers>{children}</Providers>

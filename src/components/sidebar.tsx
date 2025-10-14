@@ -1,6 +1,7 @@
 "use client";
 
 import { Home, Plus, Search, Moon, Sun, Star, Briefcase, Lightbulb, ChevronDown, Folder, Settings, User } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NoteList } from "@/components/note-list";
@@ -8,7 +9,6 @@ import type { Note } from "@/lib/types";
 import { useTheme } from "@/context/theme-provider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useNotes } from "@/context/notes-provider";
-import { NotesGateLogo } from "./icons";
 
 interface SidebarProps {
   notes: Note[];
@@ -61,7 +61,13 @@ export function Sidebar({
     <aside className="w-80 min-w-[320px] flex flex-col bg-background/50 p-4 space-y-4">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <NotesGateLogo className="w-7 h-7 text-primary" />
+           <Image
+            src="https://placehold.co/100x100/000000/FFFFFF/JPG?text=LOGO&font=lato"
+            alt="NotesGate Logo"
+            width={28}
+            height={28}
+            className="rounded-md"
+          />
           <h1 className="text-2xl font-bold text-foreground">NotesGate</h1>
         </div>
         <div className="flex items-center">

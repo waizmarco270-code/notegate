@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { NotesGateLogo } from "./icons";
-import { Progress } from "./ui/progress";
+import Image from "next/image";
 
 export function LoadingScreen() {
   const [progress, setProgress] = useState(0);
@@ -22,9 +21,15 @@ export function LoadingScreen() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground relative">
       <div className="flex flex-col items-center justify-center space-y-6 content-fade-in">
-        <NotesGateLogo className="w-24 h-24 text-primary" />
+        <Image
+          src="https://placehold.co/100x100/000000/FFFFFF/JPG?text=LOGO&font=lato"
+          alt="NotesGate Logo"
+          width={96}
+          height={96}
+          className="rounded-xl"
+        />
         <h1 className="text-4xl font-bold tracking-tighter">NotesGate</h1>
         <div className="w-64 space-y-2">
           <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
@@ -34,13 +39,13 @@ export function LoadingScreen() {
             Loading... {Math.round(progress)}%
           </p>
         </div>
+      </div>
 
-        <div className="absolute bottom-10 text-center space-y-2">
-           <p className="text-xs text-muted-foreground">Powered by EmityGate</p>
-           <div className="dev-badge">
-             <p className="text-sm font-semibold">Developed By WaizMarco</p>
-           </div>
-        </div>
+      <div className="absolute bottom-10 text-center space-y-2">
+         <p className="text-xs text-muted-foreground">Powered by EmityGate</p>
+         <div className="dev-badge">
+           <p className="text-sm font-semibold">Developed By WaizMarco</p>
+         </div>
       </div>
     </div>
   );
