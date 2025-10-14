@@ -6,6 +6,7 @@ import { Separator } from "./ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Slider } from "./ui/slider";
+import { Input } from "./ui/input";
 
 interface EditorToolbarProps {
   fontSize: string;
@@ -17,15 +18,31 @@ interface EditorToolbarProps {
 export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange }: EditorToolbarProps) {
   const numericFontSize = parseInt(fontSize.replace('px', ''), 10);
   
+  const handleManualSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSize = e.target.value;
+    if (!isNaN(Number(newSize)) && Number(newSize) >= 8 && Number(newSize) <= 200) {
+        onFontSizeChange(`${newSize}px`);
+    } else if (newSize === "") {
+        onFontSizeChange('8px');
+    }
+  }
+
   return (
     <div className="p-2 border-y flex items-center gap-2 flex-wrap bg-card">
       <div className="flex items-center gap-2 w-48">
-        <span className="text-xs font-medium w-16 text-center">{fontSize}</span>
+        <Input 
+            type="number"
+            value={numericFontSize}
+            onChange={handleManualSizeChange}
+            className="text-xs font-medium w-16 text-center h-8"
+            min={8}
+            max={200}
+        />
         <Slider
             value={[numericFontSize]}
             onValueChange={(value) => onFontSizeChange(`${value[0]}px`)}
             min={8}
-            max={128}
+            max={200}
             step={1}
             className="w-full"
         />
