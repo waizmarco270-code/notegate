@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Plus, Search, Moon, Sun, Star, User, Briefcase, Lightbulb } from "lucide-react";
+import { Home, Plus, Search, Moon, Sun, Star, User, Briefcase, Lightbulb, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NoteList } from "@/components/note-list";
@@ -45,11 +45,14 @@ export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTe
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-full justify-start">
-            <Home className="mr-2 h-4 w-4" /> All Notes
+          <Button variant="outline" className="w-full justify-between">
+            <div className="flex items-center">
+              <Home className="mr-2 h-4 w-4" /> All Notes
+            </div>
+            <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-full">
+        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
           <DropdownMenuItem>
             <Home className="mr-2 h-4 w-4" />
             All Notes

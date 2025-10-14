@@ -15,6 +15,7 @@ interface NotesContextType {
   deleteNote: (id: string) => void;
   allTags: string[];
   allCategories: string[];
+  addCategory: (category: string) => void;
 }
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
@@ -22,17 +23,14 @@ const NotesContext = createContext<NotesContextType | undefined>(undefined);
 export function NotesProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes] = useLocalStorage<Note[]>("notes", initialNotes);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+  const [allCategories, setAllCategories] = useLocalStorage<string[]>("categories", []);
   
   const activeNote = useMemo(() => {
     const sortedNotes = [...notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     const currentNote = sortedNotes.find((n) => n.id === activeNoteId);
     
-    // If there's an activeNoteId, but it's not in the notes list,
-    // or if there's no active note id, set it to the first note if available.
-    if (!currentNote && sortedNotes.length > 0) {
-      if (activeNoteId !== sortedNotes[0].id) {
-         setActiveNoteId(sortedNotes[0].id);
-      }
+    if (activeNoteId === null && sortedNotes.length > 0) {
+      setActiveNoteId(sortedNotes[0].id);
       return sortedNotes[0];
     }
     
@@ -43,7 +41,11 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     if (activeNote && activeNote.id !== activeNoteId) {
       setActiveNoteId(activeNote.id);
     }
-  }, [activeNote, activeNoteId]);
+     if (!activeNote && notes.length > 0) {
+      const sortedNotes = [...notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      setActiveNoteId(sortedNotes[0].id);
+    }
+  }, [activeNote, activeNoteId, notes]);
 
 
   const createNote = () => {
@@ -72,17 +74,27 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteNote = (id: string) => {
-    setNotes(notes.filter((note) => note.id !== id));
+    const remainingNotes = notes.filter((note) => note.id !== id);
+    setNotes(remainingNotes);
     if (activeNoteId === id) {
-      const remainingNotes = notes.filter((note) => note.id !== id);
-      const sorted = remainingNotes.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-      setActiveNoteId(sorted.length > 0 ? sorted[0].id : null);
+      if (remainingNotes.length > 0) {
+        const sorted = remainingNotes.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        setActiveNoteId(sorted[0].id);
+      } else {
+        setActiveNoteId(null);
+      }
+    }
+  };
+  
+  const addCategory = (category: string) => {
+    if (!allCategories.includes(category)) {
+      setAllCategories([...allCategories, category]);
     }
   };
 
-  const allTags = useMemo(() => [...new Set(notes.flatMap(note => note.tags))], [notes]);
-  const allCategories = useMemo(() => [...new Set(notes.map(note => note.category).filter(Boolean) as string[])], [notes]);
 
+  const allTags = useMemo(() => [...new Set(notes.flatMap(note => note.tags))], [notes]);
+  
   const value = {
     notes,
     setNotes,
@@ -93,6 +105,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     deleteNote,
     allTags,
     allCategories,
+    addCategory,
   };
 
   return (

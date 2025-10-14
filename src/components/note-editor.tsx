@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Star, Lock, MoreVertical } from "lucide-react";
+import { Star, Lock, MoreVertical, Folder } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { EditorToolbar } from "@/components/editor-toolbar";
 import { PasswordDialog } from "@/components/password-dialog";
-import { TagsDialog } from "@/components/tags-dialog";
+import { ManageCategoriesDialog } from "@/components/manage-categories-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +32,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
-  const [isTagsDialogOpen, setTagsDialogOpen] = useState(false);
+  const [isCategoriesDialogOpen, setCategoriesDialogOpen] = useState(false);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -51,9 +51,8 @@ export function NoteEditor({ note }: NoteEditorProps) {
     setPasswordDialogOpen(false);
   };
   
-  const handleTagsUpdate = (category: string | null, tags: string[]) => {
-    updateNote({ id: note.id, category, tags });
-    setTagsDialogOpen(false);
+  const handleCategoryUpdate = (category: string | null) => {
+    updateNote({ id: note.id, category });
   };
   
   const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
@@ -72,8 +71,11 @@ export function NoteEditor({ note }: NoteEditorProps) {
             <Button variant="ghost" size="icon">
                 <Star className="h-4 w-4" />
             </Button>
-             <Button variant="ghost" size="icon" onClick={() => setPasswordDialogOpen(true)}>
+            <Button variant="ghost" size="icon" onClick={() => setPasswordDialogOpen(true)}>
                 <Lock className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setCategoriesDialogOpen(true)}>
+                <Folder className="h-4 w-4" />
             </Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -82,7 +84,6 @@ export function NoteEditor({ note }: NoteEditorProps) {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setTagsDialogOpen(true)}>Organize</DropdownMenuItem>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
                             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Delete Note</DropdownMenuItem>
@@ -123,11 +124,11 @@ export function NoteEditor({ note }: NoteEditorProps) {
         onSetPassword={handlePasswordSet}
       />
       
-      <TagsDialog 
-        open={isTagsDialogOpen}
-        onOpenChange={setTagsDialogOpen}
+      <ManageCategoriesDialog
+        open={isCategoriesDialogOpen}
+        onOpenChange={setCategoriesDialogOpen}
         note={note}
-        onUpdate={handleTagsUpdate}
+        onUpdateCategory={handleCategoryUpdate}
       />
     </div>
   );
