@@ -42,6 +42,8 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summary, setSummary] = useState("");
   const [isSummaryDialogOpen, setSummaryDialogOpen] = useState(false);
+  const [fontSize, setFontSize] = useState("12px");
+  const [fontFamily, setFontFamily] = useState("Arial");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -223,7 +225,12 @@ export function NoteEditor({ note }: NoteEditorProps) {
         </div>
       </header>
       
-      <EditorToolbar />
+      <EditorToolbar 
+        fontSize={fontSize}
+        onFontSizeChange={setFontSize}
+        fontFamily={fontFamily}
+        onFontFamilyChange={setFontFamily}
+      />
       
       <div className="flex-1 overflow-auto p-4 sm:p-6">
           <div
@@ -232,6 +239,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
             onInput={(e) => setContent(e.currentTarget.innerText)}
             data-placeholder="Start writing..."
             className="h-full w-full outline-none text-base empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground"
+            style={{ fontSize, fontFamily }}
           />
       </div>
       

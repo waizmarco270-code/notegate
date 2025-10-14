@@ -6,11 +6,17 @@ import { Separator } from "./ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
+interface EditorToolbarProps {
+  fontSize: string;
+  onFontSizeChange: (size: string) => void;
+  fontFamily: string;
+  onFontFamilyChange: (font: string) => void;
+}
 
-export function EditorToolbar() {
+export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange }: EditorToolbarProps) {
   return (
     <div className="p-2 border-y flex items-center gap-2 flex-wrap bg-card">
-      <Select defaultValue="12px">
+      <Select value={fontSize} onValueChange={onFontSizeChange}>
         <SelectTrigger className="w-24 h-8 text-xs">
           <SelectValue placeholder="Size" />
         </SelectTrigger>
@@ -23,18 +29,18 @@ export function EditorToolbar() {
         </SelectContent>
       </Select>
       
-      <Select defaultValue="arial">
+      <Select value={fontFamily} onValueChange={onFontFamilyChange}>
         <SelectTrigger className="w-36 h-8 text-xs">
           <SelectValue placeholder="Font" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="arial">Arial</SelectItem>
-          <SelectItem value="times">Times New Roman</SelectItem>
-          <SelectItem value="courier">Courier New</SelectItem>
-          <SelectItem value="georgia">Georgia</SelectItem>
-          <SelectItem value="verdana">Verdana</SelectItem>
-          <SelectItem value="impact">Impact</SelectItem>
-          <SelectItem value="comic-sans">Comic Sans MS</SelectItem>
+          <SelectItem value="Arial">Arial</SelectItem>
+          <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+          <SelectItem value="Courier New">Courier New</SelectItem>
+          <SelectItem value="Georgia">Georgia</SelectItem>
+          <SelectItem value="Verdana">Verdana</SelectItem>
+          <SelectItem value="Impact">Impact</SelectItem>
+          <SelectItem value="Comic Sans MS">Comic Sans MS</SelectItem>
         </SelectContent>
       </Select>
       
