@@ -1,14 +1,12 @@
 "use client";
 
-import { Home, Plus, Search, Settings, Moon, Sun } from "lucide-react";
+import { Home, Plus, Search, Moon, Sun, Star, User, Briefcase, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NoteList } from "@/components/note-list";
 import type { Note } from "@/lib/types";
 import { useTheme } from "@/context/theme-provider";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 interface SidebarProps {
   notes: Note[];
@@ -20,7 +18,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTerm, onSearchTermChange }: SidebarProps) {
-  const { setOpenSettings, theme, setTheme, isDarkMode, setDarkMode } = useTheme();
+  const { isDarkMode, setDarkMode } = useTheme();
   
   return (
     <aside className="w-80 min-w-[320px] flex flex-col border-r bg-background/50 p-4 space-y-4">
@@ -51,8 +49,28 @@ export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTe
             <Home className="mr-2 h-4 w-4" /> All Notes
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem>All Notes</DropdownMenuItem>
+        <DropdownMenuContent className="w-full">
+          <DropdownMenuItem>
+            <Home className="mr-2 h-4 w-4" />
+            All Notes
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Star className="mr-2 h-4 w-4" />
+            Favorites
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>
+            <User className="mr-2 h-4 w-4" />
+            Personal
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Briefcase className="mr-2 h-4 w-4" />
+            Work
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Lightbulb className="mr-2 h-4 w-4" />
+            Ideas
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
