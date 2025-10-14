@@ -17,6 +17,8 @@ interface NotesContextType {
   allCategories: string[];
   addCategory: (category: string) => void;
   deleteCategory: (category: string) => void;
+  userCategories: string[];
+  importData: (data: { notes: Note[]; categories: string[] }) => void;
 }
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
@@ -104,6 +106,18 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const importData = (data: { notes: Note[]; categories: string[] }) => {
+    setNotes(data.notes);
+    setUserCategories(data.categories);
+    // After importing, set active note to the most recently updated one
+    if (data.notes.length > 0) {
+      const sorted = data.notes.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      setActiveNoteId(sorted[0].id);
+    } else {
+      setActiveNoteId(null);
+    }
+  }
+
   const allCategories = useMemo(() => [...new Set([...PREDEFINED_CATEGORIES, ...userCategories])], [userCategories]);
   const allTags = useMemo(() => [...new Set(notes.flatMap(note => note.tags))], [notes]);
   
@@ -119,6 +133,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     allCategories,
     addCategory,
     deleteCategory,
+    userCategories,
+    importData
   };
 
   return (
