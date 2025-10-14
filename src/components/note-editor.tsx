@@ -47,15 +47,14 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [isSummaryDialogOpen, setSummaryDialogOpen] = useState(false);
   const [fontSize, setFontSize] = useLocalStorage("editor-font-size", "16px");
   const [fontFamily, setFontFamily] = useLocalStorage("editor-font-family", "Arial");
+  const [currentColor, setCurrentColor] = useLocalStorage("editor-current-color", "#000000");
 
   useEffect(() => {
     const handler = setTimeout(() => {
-        if (contentRef.current) {
-            const currentContent = contentRef.current.innerHTML;
-            if (title !== note.title || currentContent !== note.content) {
-                updateNote({ id: note.id, title, content: currentContent });
-            }
-        }
+      const content = contentRef.current ? contentRef.current.innerHTML : note.content;
+      if (title !== note.title || content !== note.content) {
+        updateNote({ id: note.id, title, content });
+      }
     }, 500);
 
     return () => {
@@ -69,7 +68,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   
   useEffect(() => {
     setTitle(note.title);
-    if (contentRef.current) {
+    if (contentRef.current && contentRef.current.innerHTML !== note.content) {
         contentRef.current.innerHTML = note.content || "";
     }
   }, [note]);
@@ -177,13 +176,20 @@ export function NoteEditor({ note }: NoteEditorProps) {
   };
 
   const handleColorChange = (color: string) => {
-    document.execCommand('foreColor', false, color);
-    handleContentBlur();
+    setCurrentColor(color);
+    if(contentRef.current) {
+      contentRef.current.focus();
+      document.execCommand('foreColor', false, color);
+      handleContentBlur();
+    }
   };
   
   const handleInsertList = (type: "insertUnorderedList" | "insertOrderedList") => {
-    document.execCommand(type, false, undefined);
-    handleContentBlur();
+    if(contentRef.current) {
+      contentRef.current.focus();
+      document.execCommand(type, false, undefined);
+      handleContentBlur();
+    }
   };
 
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
@@ -291,6 +297,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         onFontSizeChange={handleFontSizeChange}
         fontFamily={fontFamily}
         onFontFamilyChange={setFontFamily}
+        currentColor={currentColor}
         onColorChange={handleColorChange}
         onInsertUnorderedList={() => handleInsertList("insertUnorderedList")}
         onInsertOrderedList={() => handleInsertList("insertOrderedList")}

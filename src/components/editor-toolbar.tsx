@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState } from "react";
 import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette, CaseSensitive, Heading, Pilcrow } from "lucide-react";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
@@ -9,12 +10,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { cn } from "@/lib/utils";
 
 interface EditorToolbarProps {
   fontSize: string;
   onFontSizeChange: (size: string) => void;
   fontFamily: string;
   onFontFamilyChange: (font: string) => void;
+  currentColor: string;
   onColorChange: (color: string) => void;
   onInsertUnorderedList: () => void;
   onInsertOrderedList: () => void;
@@ -25,8 +28,9 @@ const colors = [
     "#FFA500", "#800080", "#008000", "#FFC0CB", "#A52A2A", "#808080", "#FFFFFF"
 ];
 
-export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, onColorChange, onInsertUnorderedList, onInsertOrderedList }: EditorToolbarProps) {
+export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, currentColor, onColorChange, onInsertUnorderedList, onInsertOrderedList }: EditorToolbarProps) {
   const numericFontSize = parseInt(fontSize.replace('px', ''), 10);
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   
   const handleManualSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newSize = e.target.value;
@@ -36,6 +40,11 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
         onFontSizeChange('8px');
     }
   }
+
+  const handleColorSelect = (color: string) => {
+    onColorChange(color);
+    setIsColorPickerOpen(false);
+  };
 
   return (
     <div className="p-2 border-y flex items-center gap-2 flex-wrap bg-card">
@@ -160,10 +169,10 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
       </Button>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
-       <Popover>
+       <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
         <PopoverTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Palette className="h-4 w-4" />
+                <Palette className="h-4 w-4 transition-colors" style={{ color: currentColor }} />
             </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-2">
@@ -172,9 +181,12 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
                     <Button
                         key={color}
                         variant="outline"
-                        className="h-6 w-6 p-0 border"
+                        className={cn(
+                            "h-6 w-6 p-0 border transition-transform hover:scale-110",
+                            currentColor === color && "ring-2 ring-primary ring-offset-2"
+                        )}
                         style={{ backgroundColor: color }}
-                        onClick={() => onColorChange(color)}
+                        onClick={() => handleColorSelect(color)}
                     />
                 ))}
             </div>
