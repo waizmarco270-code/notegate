@@ -8,6 +8,7 @@ import { PasswordDialog } from "@/components/password-dialog";
 import { Lock, Plus, Settings, Sparkles, FileText, Lightbulb } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { useTheme } from "@/context/theme-provider";
 
 export function NoteView() {
   const { activeNote, setActiveNoteId, createNote } = useNotes();
