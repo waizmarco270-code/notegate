@@ -175,7 +175,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled Note"
-          className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1 bg-transparent"
+          className="text-3xl font-bold font-headline border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1 bg-transparent tracking-wide"
         />
         <div className="flex items-center gap-1 sm:gap-2">
             <Button onClick={handleSummarize} disabled={isSummarizing} variant="ghost" size="sm">
