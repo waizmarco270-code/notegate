@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Plus, Search, Moon, Sun, Star, User, Briefcase, Lightbulb, ChevronDown, Folder, Settings } from "lucide-react";
+import { Home, Plus, Search, Moon, Sun, Star, Briefcase, Lightbulb, ChevronDown, Folder, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NoteList } from "@/components/note-list";
@@ -8,7 +8,6 @@ import type { Note } from "@/lib/types";
 import { useTheme } from "@/context/theme-provider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useNotes } from "@/context/notes-provider";
-import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   notes: Note[];
@@ -19,9 +18,26 @@ interface SidebarProps {
   onSearchTermChange: (term: string) => void;
   onSelectCategory: (category: string | null) => void;
   activeCategory: string | null;
+  onDeleteNote: (id: string) => void;
+  onToggleFavorite: (id: string, isFavorite: boolean) => void;
+  onSetPassword: (note: Note) => void;
+  onSetCategory: (note: Note) => void;
 }
 
-export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTerm, onSearchTermChange, onSelectCategory, activeCategory }: SidebarProps) {
+export function Sidebar({ 
+  notes, 
+  activeNoteId, 
+  onSelectNote, 
+  onNewNote, 
+  searchTerm, 
+  onSearchTermChange, 
+  onSelectCategory, 
+  activeCategory,
+  onDeleteNote,
+  onToggleFavorite,
+  onSetPassword,
+  onSetCategory
+}: SidebarProps) {
   const { isDarkMode, setDarkMode, setOpenSettings } = useTheme();
   const { allCategories } = useNotes();
 
@@ -99,7 +115,15 @@ export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTe
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <NoteList notes={notes} activeNoteId={activeNoteId} onSelectNote={onSelectNote} />
+      <NoteList 
+        notes={notes} 
+        activeNoteId={activeNoteId} 
+        onSelectNote={onSelectNote}
+        onDeleteNote={onDeleteNote}
+        onToggleFavorite={onToggleFavorite}
+        onSetPassword={onSetPassword}
+        onSetCategory={onSetCategory}
+      />
     </aside>
   );
 }
