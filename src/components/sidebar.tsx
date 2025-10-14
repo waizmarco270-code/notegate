@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Book, Home, Plus, Search, Tag } from "lucide-react";
+import { Home, Plus, Search, Tag, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NoteList } from "@/components/note-list";
@@ -8,6 +8,8 @@ import type { Note } from "@/lib/types";
 import { SecureNoteLogo } from "@/components/icons";
 import { useNotes } from "@/context/notes-provider";
 import { Badge } from "@/components/ui/badge";
+import { useTheme } from "@/context/theme-provider";
+import { Separator } from "./ui/separator";
 
 interface SidebarProps {
   notes: Note[];
@@ -22,6 +24,7 @@ interface SidebarProps {
 
 export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTerm, onSearchTermChange, onFilterChange, currentFilter }: SidebarProps) {
   const { allTags, allCategories } = useNotes();
+  const { setOpenSettings } = useTheme();
   
   return (
     <aside className="w-80 min-w-80 flex flex-col border-r bg-card/50">
@@ -30,9 +33,14 @@ export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTe
           <SecureNoteLogo className="h-8 w-8 text-primary" />
           <h1 className="text-xl font-headline font-bold text-primary">SecureNote</h1>
         </div>
-        <Button variant="ghost" size="icon" onClick={onNewNote} aria-label="Create new note">
-          <Plus className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center">
+            <Button variant="ghost" size="icon" onClick={() => setOpenSettings(true)} aria-label="Open settings">
+                <Settings className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={onNewNote} aria-label="Create new note">
+                <Plus className="h-5 w-5" />
+            </Button>
+        </div>
       </header>
 
       <div className="p-4 border-b">
@@ -48,20 +56,32 @@ export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTe
       </div>
       
       <div className="p-4 border-b space-y-3 text-sm">
-        <div className="flex items-center gap-2 text-muted-foreground"><Home className="w-4 h-4" /> All Notes</div>
+        <div 
+            className="flex items-center gap-2 text-muted-foreground cursor-pointer"
+            onClick={() => { onFilterChange(null); onSearchTermChange(''); }}
+        >
+            <Home className="w-4 h-4" /> All Notes
+        </div>
         <div className="space-y-2">
-            <div className="flex items-center gap-2 text-muted-foreground"><Book className="w-4 h-4" /> Categories</div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-2 text-muted-foreground"><Tag className="w-4 h-4" /> Categories</div>
+            <div className="flex flex-wrap gap-1">
                 {allCategories.map(cat => (
-                    <Badge key={cat} variant={currentFilter?.type === 'category' && currentFilter.value === cat ? "default" : "secondary"} className="cursor-pointer" onClick={() => onFilterChange({ type: 'category', value: cat })}>{cat}</Badge>
+                    <Badge 
+                        key={cat} 
+                        variant={currentFilter?.type === 'category' && currentFilter.value === cat ? "default" : "secondary"} 
+                        className="cursor-pointer" 
+                        onClick={() => onFilterChange({ type: 'category', value: cat })}>{cat}</Badge>
                 ))}
             </div>
         </div>
          <div className="space-y-2">
             <div className="flex items-center gap-2 text-muted-foreground"><Tag className="w-4 h-4" /> Tags</div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1">
                 {allTags.map(tag => (
-                    <Badge key={tag} variant={currentFilter?.type === 'tag' && currentFilter.value === tag ? "default" : "secondary"} className="cursor-pointer" onClick={() => onFilterChange({ type: 'tag', value: tag })}>{tag}</Badge>
+                    <Badge 
+                        key={tag} 
+                        variant={currentFilter?.type === 'tag' && currentFilter.value === tag ? "default" : "secondary"} 
+                        className="cursor-pointer" onClick={() => onFilterChange({ type: 'tag', value: tag })}>{tag}</Badge>
                 ))}
             </div>
         </div>
