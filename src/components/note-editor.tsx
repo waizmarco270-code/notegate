@@ -71,54 +71,54 @@ export function NoteEditor({ note }: NoteEditorProps) {
 
   return (
     <div className="flex flex-col h-full p-4">
-      <header className="p-4 flex items-center justify-between gap-4 bg-card rounded-t-lg border-b">
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Untitled Note"
-          className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1 bg-transparent"
-        />
-        <div className="flex items-center gap-1 sm:gap-2">
-            <span className="text-sm text-muted-foreground hidden sm:inline">{wordCount} words</span>
-            <Button variant="ghost" size="icon" onClick={toggleFavorite}>
-                <Star className={cn("h-4 w-4", isFavorite ? "text-yellow-400 fill-yellow-400" : "")} />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => setPasswordDialogOpen(true)}>
-                <Lock className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => setCategoriesDialogOpen(true)}>
-                <Folder className="h-4 w-4" />
-            </Button>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Delete Note</DropdownMenuItem>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This will permanently delete the note. This action cannot be undone.
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteNote(note.id)}>Delete</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-      </header>
-      
-      <div className="flex flex-col flex-1 bg-card border-x border-b rounded-b-lg">
+      <div className="flex flex-col flex-1 bg-card border rounded-lg">
+        <header className="p-4 flex items-center justify-between gap-4">
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Untitled Note"
+            className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1 bg-transparent"
+          />
+          <div className="flex items-center gap-1 sm:gap-2">
+              <span className="text-sm text-muted-foreground hidden sm:inline">{wordCount} words</span>
+              <Button variant="ghost" size="icon" onClick={toggleFavorite}>
+                  <Star className={cn("h-4 w-4", isFavorite ? "text-yellow-400 fill-yellow-400" : "")} />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setPasswordDialogOpen(true)}>
+                  <Lock className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setCategoriesDialogOpen(true)}>
+                  <Folder className="h-4 w-4" />
+              </Button>
+              <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                      </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                      <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Delete Note</DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                              <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                  This will permanently delete the note. This action cannot be undone.
+                              </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => deleteNote(note.id)}>Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                          </AlertDialogContent>
+                      </AlertDialog>
+                  </DropdownMenuContent>
+              </DropdownMenu>
+          </div>
+        </header>
+        
         <EditorToolbar />
         <div className="flex-1 overflow-auto p-4 sm:p-6">
             <Textarea
