@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Star, Lock, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2 } from "lucide-react";
+import { Star, Lock, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,8 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { summarizeNoteAction } from "@/lib/actions";
+import { SummaryDialog } from "./summary-dialog";
 
 interface NoteEditorProps {
   note: Note;
@@ -38,7 +40,9 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [isCategoriesDialogOpen, setCategoriesDialogOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(note.isFavorite ?? false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summary, setSummary] = useState("");
+  const [isSummaryDialogOpen, setSummaryDialogOpen] = useState(false);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -55,6 +59,11 @@ export function NoteEditor({ note }: NoteEditorProps) {
   useEffect(() => {
     setIsFavorite(note.isFavorite ?? false);
   }, [note.isFavorite]);
+  
+  useEffect(() => {
+    setTitle(note.title);
+    setContent(note.content);
+  }, [note]);
 
   const handlePasswordSet = (password: string | null) => {
     updateNote({ id: note.id, password });
@@ -103,6 +112,30 @@ export function NoteEditor({ note }: NoteEditorProps) {
     toast({ title: `Note exported as ${fileExtension.toUpperCase()}.` });
   };
 
+  const handleSummarize = async () => {
+    if (!content) {
+      toast({
+        variant: "destructive",
+        title: "Cannot summarize an empty note.",
+      });
+      return;
+    }
+    setIsSummarizing(true);
+    const result = await summarizeNoteAction({ noteContent: content });
+    setIsSummarizing(false);
+
+    if (result.summary) {
+      setSummary(result.summary);
+      setSummaryDialogOpen(true);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Summarization failed.",
+        description: result.error || "An unknown error occurred.",
+      });
+    }
+  };
+
   const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
 
   return (
@@ -116,6 +149,10 @@ export function NoteEditor({ note }: NoteEditorProps) {
             className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1 bg-transparent"
           />
           <div className="flex items-center gap-1 sm:gap-2">
+              <Button onClick={handleSummarize} disabled={isSummarizing} variant="ghost" size="sm">
+                <Sparkles className="h-4 w-4 mr-2" />
+                {isSummarizing ? "Summarizing..." : "Summarize"}
+              </Button>
               <span className="text-sm text-muted-foreground hidden sm:inline">{wordCount} words</span>
               <Button variant="ghost" size="icon" onClick={toggleFavorite}>
                   <Star className={cn("h-4 w-4", isFavorite ? "text-yellow-400 fill-yellow-400" : "")} />
@@ -204,6 +241,11 @@ export function NoteEditor({ note }: NoteEditorProps) {
         onOpenChange={setCategoriesDialogOpen}
         note={note}
         onUpdateCategory={handleCategoryUpdate}
+      />
+      <SummaryDialog
+        open={isSummaryDialogOpen}
+        onOpenChange={setSummaryDialogOpen}
+        summary={summary}
       />
     </div>
   );
