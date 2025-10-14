@@ -5,7 +5,6 @@ import { Star, Lock, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, S
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { EditorToolbar } from "@/components/editor-toolbar";
 import { PasswordDialog } from "@/components/password-dialog";
@@ -39,7 +38,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isCategoriesDialogOpen, setCategoriesDialogOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(note.isFavorite ?? false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summary, setSummary] = useState("");
   const [isSummaryDialogOpen, setSummaryDialogOpen] = useState(false);
@@ -63,6 +62,9 @@ export function NoteEditor({ note }: NoteEditorProps) {
   useEffect(() => {
     setTitle(note.title);
     setContent(note.content);
+    if (contentRef.current && contentRef.current.innerText !== note.content) {
+      contentRef.current.innerText = note.content;
+    }
   }, [note]);
 
   const handlePasswordSet = (password: string | null) => {
@@ -86,7 +88,13 @@ export function NoteEditor({ note }: NoteEditorProps) {
   };
 
   const handleSelectAll = () => {
-    textareaRef.current?.select();
+    if (contentRef.current) {
+        const range = document.createRange();
+        range.selectNodeContents(contentRef.current);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+    }
   };
 
   const handleExport = (format: "txt" | "html") => {
@@ -95,7 +103,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
     let fileExtension = "txt";
 
     if (format === "html") {
-      fileContent = `<!DOCTYPE html><html><head><title>${title}</title></head><body><pre>${content}</pre></body></html>`;
+      fileContent = `<!DOCTYPE html><html><head><title>${title}</title></head><body><div>${content.replace(/\n/g, '<br>')}</div></body></html>`;
       mimeType = "text/html";
       fileExtension = "html";
     }
@@ -218,12 +226,12 @@ export function NoteEditor({ note }: NoteEditorProps) {
       <EditorToolbar />
       
       <div className="flex-1 overflow-auto p-4 sm:p-6">
-          <Textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Start writing..."
-            className="h-full w-full border-none shadow-none focus-visible:ring-0 resize-none text-base bg-transparent p-0"
+          <div
+            ref={contentRef}
+            contentEditable={true}
+            onInput={(e) => setContent(e.currentTarget.innerText)}
+            data-placeholder="Start writing..."
+            className="h-full w-full outline-none text-base empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground"
           />
       </div>
       
