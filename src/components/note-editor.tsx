@@ -59,13 +59,13 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-lg border shadow-sm">
+    <div className="flex flex-col h-full bg-card">
       <header className="p-4 border-b flex items-center justify-between gap-4">
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled Note"
-          className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1"
+          className="text-lg font-semibold border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1 bg-transparent"
         />
         <div className="flex items-center gap-1 sm:gap-2">
             <span className="text-sm text-muted-foreground hidden sm:inline">{wordCount} words</span>
@@ -112,7 +112,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Start writing..."
-          className="h-full w-full border-none shadow-none focus-visible:ring-0 resize-none text-base p-0"
+          className="h-full w-full border-none shadow-none focus-visible:ring-0 resize-none text-base p-0 bg-transparent"
         />
       </div>
       
