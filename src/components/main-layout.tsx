@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { NoteView } from "@/components/note-view";
 import { useNotes } from "@/context/notes-provider";
 
 export function MainLayout() {
-  const { notes, createNote, activeNote, setActiveNoteId } = useNotes();
+  const { notes, createNote, activeNote, setActiveNoteId, setNotes } = useNotes();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredNotes = notes
     .filter((note) =>
-      note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      note.content.toLowerCase().includes(searchTerm.toLowerCase())
+      (note.title && note.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (note.content && note.content.toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Plus, Search, Settings, RotateCw } from "lucide-react";
+import { Home, Plus, Search, Settings, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NoteList } from "@/components/note-list";
@@ -20,23 +20,18 @@ interface SidebarProps {
 }
 
 export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTerm, onSearchTermChange }: SidebarProps) {
-  const { setOpenSettings, theme, setTheme } = useTheme();
+  const { setOpenSettings, theme, setTheme, isDarkMode, setDarkMode } = useTheme();
   
   return (
-    <aside className="w-80 min-w-80 flex flex-col border-r bg-background/50 p-4 space-y-4">
+    <aside className="w-80 min-w-[320px] flex flex-col border-r bg-background/50 p-4 space-y-4">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Legendary Notes</h1>
-        <div className="flex items-center">
-          <Button variant="ghost" size="icon" onClick={() => window.location.reload()} aria-label="Refresh">
-            <RotateCw className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={() => setOpenSettings(true)} aria-label="Open settings">
-            <Settings className="h-5 w-5" />
-          </Button>
-        </div>
+        <Button variant="ghost" size="icon" onClick={() => setDarkMode(!isDarkMode)} aria-label="Toggle theme">
+            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </Button>
       </header>
 
-      <Button variant="default" className="w-full bg-black text-white dark:bg-white dark:text-black" onClick={onNewNote}>
+      <Button variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={onNewNote}>
         <Plus className="h-4 w-4 mr-2" /> New Note
       </Button>
 
