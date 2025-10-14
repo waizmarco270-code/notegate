@@ -51,25 +51,21 @@ export function NoteEditor({ note }: NoteEditorProps) {
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      const content = contentRef.current ? contentRef.current.innerHTML : note.content;
-      if (title !== note.title || content !== note.content) {
-        updateNote({ id: note.id, title, content });
+      if (title !== note.title) {
+        updateNote({ id: note.id, title });
       }
     }, 500);
 
     return () => {
       clearTimeout(handler);
     };
-  }, [title, note.id, note.title, note.content, updateNote]);
+  }, [title, note.id, note.title, updateNote]);
 
   useEffect(() => {
     setIsFavorite(note.isFavorite ?? false);
-  }, [note.isFavorite]);
-  
-  useEffect(() => {
     setTitle(note.title);
-    if (contentRef.current && contentRef.current.innerHTML !== note.content) {
-        contentRef.current.innerHTML = note.content || "";
+    if (contentRef.current && note.content !== contentRef.current.innerHTML) {
+      contentRef.current.innerHTML = note.content || "";
     }
   }, [note]);
 
@@ -180,7 +176,6 @@ export function NoteEditor({ note }: NoteEditorProps) {
     if(contentRef.current) {
       contentRef.current.focus();
       document.execCommand('foreColor', false, color);
-      handleContentBlur();
     }
   };
   
@@ -336,3 +331,5 @@ export function NoteEditor({ note }: NoteEditorProps) {
     </div>
   );
 }
+
+    
