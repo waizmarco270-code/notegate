@@ -12,9 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Folder, Plus } from "lucide-react";
+import { Folder, Plus, X } from "lucide-react";
 import type { Note } from "@/lib/types";
-import { useNotes } from "@/context/notes-provider";
+import { useNotes, PREDEFINED_CATEGORIES } from "@/context/notes-provider";
 import { cn } from "@/lib/utils";
 
 interface ManageCategoriesDialogProps {
@@ -25,7 +25,7 @@ interface ManageCategoriesDialogProps {
 }
 
 export function ManageCategoriesDialog({ open, onOpenChange, note, onUpdateCategory }: ManageCategoriesDialogProps) {
-  const { allCategories, addCategory } = useNotes();
+  const { allCategories, addCategory, deleteCategory } = useNotes();
   const [currentCategory, setCurrentCategory] = useState(note.category);
   const [newCategory, setNewCategory] = useState("");
 
@@ -40,6 +40,11 @@ export function ManageCategoriesDialog({ open, onOpenChange, note, onUpdateCateg
     setCurrentCategory(category);
     onUpdateCategory(category);
     onOpenChange(false);
+  }
+  
+  const handleDeleteCategory = (e: React.MouseEvent, category: string) => {
+    e.stopPropagation();
+    deleteCategory(category);
   }
 
   return (
@@ -79,14 +84,24 @@ export function ManageCategoriesDialog({ open, onOpenChange, note, onUpdateCateg
                   None
                 </Badge>
               {allCategories.map(cat => (
-                <Badge
-                  key={cat}
-                  variant={currentCategory === cat ? "default" : "secondary"}
-                  className="cursor-pointer"
-                  onClick={() => handleSelectCategory(cat)}
-                >
-                  {cat}
-                </Badge>
+                <div key={cat} className="relative group">
+                  <Badge
+                    variant={currentCategory === cat ? "default" : "secondary"}
+                    className="cursor-pointer pr-4"
+                    onClick={() => handleSelectCategory(cat)}
+                  >
+                    {cat}
+                  </Badge>
+                  {!PREDEFINED_CATEGORIES.includes(cat) && (
+                     <button
+                        onClick={(e) => handleDeleteCategory(e, cat)}
+                        className="absolute -top-1.5 -right-1.5 rounded-full bg-destructive text-destructive-foreground p-0.5 opacity-80 hover:opacity-100 transition-opacity"
+                        aria-label={`Delete category ${cat}`}
+                    >
+                        <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           </div>

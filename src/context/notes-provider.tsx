@@ -16,11 +16,12 @@ interface NotesContextType {
   allTags: string[];
   allCategories: string[];
   addCategory: (category: string) => void;
+  deleteCategory: (category: string) => void;
 }
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
 
-const PREDEFINED_CATEGORIES = ["Personal", "Work", "Ideas"];
+export const PREDEFINED_CATEGORIES = ["Personal", "Work", "Ideas"];
 
 export function NotesProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes] = useLocalStorage<Note[]>("notes", initialNotes);
@@ -94,6 +95,15 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const deleteCategory = (categoryToDelete: string) => {
+    if (!PREDEFINED_CATEGORIES.includes(categoryToDelete)) {
+      setUserCategories(userCategories.filter(c => c !== categoryToDelete));
+      setNotes(notes.map(note => 
+        note.category === categoryToDelete ? { ...note, category: null } : note
+      ));
+    }
+  };
+
   const allCategories = useMemo(() => [...new Set([...PREDEFINED_CATEGORIES, ...userCategories])], [userCategories]);
   const allTags = useMemo(() => [...new Set(notes.flatMap(note => note.tags))], [notes]);
   
@@ -108,6 +118,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     allTags,
     allCategories,
     addCategory,
+    deleteCategory,
   };
 
   return (
