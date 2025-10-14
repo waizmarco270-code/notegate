@@ -3,27 +3,35 @@
 import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette } from "lucide-react";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+
 
 export function EditorToolbar() {
   return (
-    <div className="p-2 border-b flex items-center gap-1 flex-wrap">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="w-20 justify-start">5</Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem>5</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="w-32 justify-start">Font</Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem>Arial</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+    <div className="p-2 border-b flex items-center gap-2 flex-wrap">
+      <Select defaultValue="12px">
+        <SelectTrigger className="w-24">
+          <SelectValue placeholder="Size" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="10px">10</SelectItem>
+          <SelectItem value="12px">12</SelectItem>
+          <SelectItem value="14px">14</SelectItem>
+          <SelectItem value="16px">16</SelectItem>
+          <SelectItem value="20px">20</SelectItem>
+        </SelectContent>
+      </Select>
+      
+      <Select defaultValue="arial">
+        <SelectTrigger className="w-36">
+          <SelectValue placeholder="Font" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="arial">Arial</SelectItem>
+          <SelectItem value="times">Times New Roman</SelectItem>
+          <SelectItem value="courier">Courier New</SelectItem>
+        </SelectContent>
+      </Select>
       
       <Separator orientation="vertical" className="h-6 mx-1" />
 
