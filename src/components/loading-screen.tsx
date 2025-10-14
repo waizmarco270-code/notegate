@@ -24,7 +24,7 @@ export function LoadingScreen() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground relative">
       <div className="flex flex-col items-center justify-center space-y-6 content-fade-in">
         <Image
-          src="https://placehold.co/100x100/000000/FFFFFF/JPG?text=LOGO&font=lato"
+          src="/logo.jpg"
           alt="NotesGate Logo"
           width={96}
           height={96}
@@ -42,7 +42,7 @@ export function LoadingScreen() {
       </div>
 
       <div className="absolute bottom-10 text-center space-y-2">
-         <p className="text-xs text-muted-foreground">Powered by EmityGate</p>
+         <p className="text-sm font-medium text-muted-foreground">Powered by EmityGate</p>
          <div className="dev-badge">
            <p className="text-sm font-semibold">Developed By WaizMarco</p>
          </div>
