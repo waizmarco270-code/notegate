@@ -7,6 +7,7 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 
 interface NotesContextType {
   notes: Note[];
+  setNotes: (notes: Note[]) => void;
   activeNote: Note | null;
   setActiveNoteId: (id: string | null) => void;
   createNote: () => void;
@@ -21,28 +22,28 @@ const NotesContext = createContext<NotesContextType | undefined>(undefined);
 export function NotesProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes] = useLocalStorage<Note[]>("notes", initialNotes);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
-
-  useEffect(() => {
-    // On initial load, if there are no notes, set them to the initialNotes.
-    // This will clear any previously stored notes if the user wants to start fresh.
-    const storedNotes = localStorage.getItem("notes");
-    if (!storedNotes || JSON.parse(storedNotes).length === 0) {
-        setNotes(initialNotes);
-    }
-  }, [setNotes]);
-
-
+  
   const activeNote = useMemo(() => {
     const sortedNotes = [...notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     const currentNote = sortedNotes.find((n) => n.id === activeNoteId);
+    
+    // If there's an activeNoteId, but it's not in the notes list,
+    // or if there's no active note id, set it to the first note if available.
+    if (!currentNote && sortedNotes.length > 0) {
+      if (activeNoteId !== sortedNotes[0].id) {
+         setActiveNoteId(sortedNotes[0].id);
+      }
+      return sortedNotes[0];
+    }
+    
     return currentNote ?? (sortedNotes.length > 0 ? sortedNotes[0] : null);
   }, [notes, activeNoteId]);
   
   useEffect(() => {
-    if (activeNote) {
+    if (activeNote && activeNote.id !== activeNoteId) {
       setActiveNoteId(activeNote.id);
     }
-  }, [activeNote]);
+  }, [activeNote, activeNoteId]);
 
 
   const createNote = () => {
@@ -84,6 +85,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     notes,
+    setNotes,
     activeNote,
     setActiveNoteId,
     createNote,
