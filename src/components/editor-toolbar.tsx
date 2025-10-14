@@ -23,6 +23,7 @@ interface EditorToolbarProps {
   onColorChange: (color: string) => void;
   onInsertUnorderedList: () => void;
   onInsertOrderedList: () => void;
+  onFormat: (command: string, value?: string) => void;
   applyToAll: boolean;
   onApplyToAllChange: (value: boolean) => void;
 }
@@ -32,7 +33,7 @@ const colors = [
     "#FFA500", "#800080", "#008000", "#FFC0CB", "#A52A2A", "#808080", "#FFFFFF"
 ];
 
-export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, currentColor, onColorChange, onInsertUnorderedList, onInsertOrderedList, applyToAll, onApplyToAllChange }: EditorToolbarProps) {
+export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, currentColor, onColorChange, onInsertUnorderedList, onInsertOrderedList, onFormat, applyToAll, onApplyToAllChange }: EditorToolbarProps) {
   const numericFontSize = parseInt(fontSize.replace('px', ''), 10);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   
@@ -95,17 +96,17 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
             </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="flex gap-1">
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onFormat('bold')}>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                     <Bold className="h-4 w-4" />
                 </Button>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onFormat('italic')}>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                     <Italic className="h-4 w-4" />
                 </Button>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onFormat('underline')}>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                     <Underline className="h-4 w-4" />
                 </Button>
@@ -119,20 +120,20 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
                 <Heading className="h-4 w-4" />
             </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="flex gap-1">
-            <DropdownMenuItem>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Heading1 className="h-4 w-4" />
+        <DropdownMenuContent className="flex flex-col gap-1">
+            <DropdownMenuItem onSelect={() => onFormat('formatBlock', '<h1>')}>
+                <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <Heading1 className="h-4 w-4 mr-2" /> Heading 1
                 </Button>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Heading2 className="h-4 w-4" />
+            <DropdownMenuItem onSelect={() => onFormat('formatBlock', '<h2>')}>
+                <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <Heading2 className="h-4 w-4 mr-2" /> Heading 2
                 </Button>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Heading3 className="h-4 w-4" />
+            <DropdownMenuItem onSelect={() => onFormat('formatBlock', '<h3>')}>
+                <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <Heading3 className="h-4 w-4 mr-2" /> Heading 3
                 </Button>
             </DropdownMenuItem>
         </DropdownMenuContent>
@@ -145,17 +146,17 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
             </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="flex gap-1">
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onFormat('justifyLeft')}>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                     <AlignLeft className="h-4 w-4" />
                 </Button>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onFormat('justifyCenter')}>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                     <AlignCenter className="h-4 w-4" />
                 </Button>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onFormat('justifyRight')}>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                     <AlignRight className="h-4 w-4" />
                 </Button>
@@ -204,3 +205,5 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
     </div>
   );
 }
+
+    

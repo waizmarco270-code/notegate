@@ -188,24 +188,28 @@ export function NoteEditor({ note }: NoteEditorProps) {
 
   const handleColorChange = (color: string) => {
     setCurrentColor(color);
-    if (applyToAll) {
-      applyStyleToAll({ color: color });
-      return;
-    }
-
-    if(contentRef.current) {
-      contentRef.current.focus();
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        document.execCommand('foreColor', false, color);
-      }
-    }
+    handleFormat('foreColor', color);
   };
   
   const handleInsertList = (type: "insertUnorderedList" | "insertOrderedList") => {
     if(contentRef.current) {
       contentRef.current.focus();
       document.execCommand(type, false, undefined);
+      handleContentBlur();
+    }
+  };
+
+  const handleFormat = (command: string, value?: string) => {
+    if (contentRef.current) {
+      contentRef.current.focus();
+      if (applyToAll) {
+        handleSelectAll();
+      }
+      document.execCommand(command, false, value);
+      if (applyToAll) {
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+      }
       handleContentBlur();
     }
   };
@@ -319,6 +323,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         onColorChange={handleColorChange}
         onInsertUnorderedList={() => handleInsertList("insertUnorderedList")}
         onInsertOrderedList={() => handleInsertList("insertOrderedList")}
+        onFormat={handleFormat}
         applyToAll={applyToAll}
         onApplyToAllChange={setApplyToAll}
       />
@@ -356,3 +361,5 @@ export function NoteEditor({ note }: NoteEditorProps) {
     </div>
   );
 }
+
+    
