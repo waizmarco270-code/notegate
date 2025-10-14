@@ -7,4 +7,5 @@ export type Note = {
   createdAt: string;
   updatedAt: string;
   password: string | null;
+  isFavorite?: boolean;
 };

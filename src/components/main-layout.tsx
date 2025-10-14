@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { NoteView } from "@/components/note-view";
 import { useNotes } from "@/context/notes-provider";
@@ -9,6 +9,11 @@ export function MainLayout() {
   const { notes, createNote, activeNote, setActiveNoteId } = useNotes();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const filteredNotes = notes
     .filter((note) => {
@@ -16,13 +21,12 @@ export function MainLayout() {
         (note.title && note.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (note.content && note.content.toLowerCase().includes(searchTerm.toLowerCase()));
       
+      if (categoryFilter === "Favorites") {
+        return matchesSearch && note.isFavorite;
+      }
+
       const matchesCategory =
         categoryFilter === null || note.category === categoryFilter;
-
-      if (categoryFilter === "Favorites") {
-        // Placeholder for favorites logic
-        return matchesSearch;
-      }
       
       return matchesSearch && matchesCategory;
     })
@@ -35,6 +39,10 @@ export function MainLayout() {
       setCategoryFilter(category);
     }
   };
+
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">

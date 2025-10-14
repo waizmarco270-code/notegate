@@ -49,19 +49,6 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     }
   }, [activeNote, activeNoteId, notes]);
 
-  useEffect(() => {
-    // Clear local storage on initial load for a clean slate, one time.
-    const hasCleared = localStorage.getItem('clearedOnce');
-    if (!hasCleared) {
-      localStorage.removeItem('notes');
-      localStorage.removeItem('categories');
-      localStorage.setItem('clearedOnce', 'true');
-      setNotes(initialNotes);
-      setUserCategories([]);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const createNote = () => {
     const newNote: Note = {
       id: `note-${Date.now()}`,
@@ -72,6 +59,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       password: null,
+      isFavorite: false,
     };
     setNotes([newNote, ...notes]);
     setActiveNoteId(newNote.id);

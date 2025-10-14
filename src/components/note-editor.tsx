@@ -22,6 +22,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 interface NoteEditorProps {
   note: Note;
@@ -33,6 +34,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [content, setContent] = useState(note.content);
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isCategoriesDialogOpen, setCategoriesDialogOpen] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(note.isFavorite ?? false);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -46,6 +48,10 @@ export function NoteEditor({ note }: NoteEditorProps) {
     };
   }, [title, content, note.id, note.title, note.content, updateNote]);
 
+  useEffect(() => {
+    setIsFavorite(note.isFavorite ?? false);
+  }, [note.isFavorite]);
+
   const handlePasswordSet = (password: string | null) => {
     updateNote({ id: note.id, password });
     setPasswordDialogOpen(false);
@@ -53,6 +59,12 @@ export function NoteEditor({ note }: NoteEditorProps) {
   
   const handleCategoryUpdate = (category: string | null) => {
     updateNote({ id: note.id, category });
+  };
+
+  const toggleFavorite = () => {
+    const newIsFavorite = !isFavorite;
+    setIsFavorite(newIsFavorite);
+    updateNote({ id: note.id, isFavorite: newIsFavorite });
   };
   
   const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
@@ -68,8 +80,8 @@ export function NoteEditor({ note }: NoteEditorProps) {
         />
         <div className="flex items-center gap-1 sm:gap-2">
             <span className="text-sm text-muted-foreground hidden sm:inline">{wordCount} words</span>
-            <Button variant="ghost" size="icon">
-                <Star className="h-4 w-4" />
+            <Button variant="ghost" size="icon" onClick={toggleFavorite}>
+                <Star className={cn("h-4 w-4", isFavorite ? "text-yellow-400 fill-yellow-400" : "")} />
             </Button>
             <Button variant="ghost" size="icon" onClick={() => setPasswordDialogOpen(true)}>
                 <Lock className="h-4 w-4" />
