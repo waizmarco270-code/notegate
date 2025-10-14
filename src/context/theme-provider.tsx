@@ -3,68 +3,43 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 
-type Theme = "classic" | "ocean" | "forest" | "rose";
+type Theme = "light" | "dark";
 
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  isDarkMode: boolean;
-  setDarkMode: (isDark: boolean) => void;
   openSettings: boolean;
   setOpenSettings: (open: boolean) => void;
+  isDarkMode: boolean;
+  setDarkMode: (isDark: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useLocalStorage<Theme>("theme", "classic");
-  const [isDarkMode, setDarkMode] = useLocalStorage<boolean>("dark-mode", true);
+  const [theme, setTheme] = useLocalStorage<Theme>("theme", "light");
   const [openSettings, setOpenSettings] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-  
-  useEffect(() => {
-    if (isMounted) {
       const root = window.document.documentElement;
       root.classList.remove("light", "dark");
-      if (isDarkMode) {
-        root.classList.add("dark");
-      } else {
-        root.classList.add("light");
-      }
-      
-      root.classList.forEach(className => {
-        if (className.startsWith('theme-')) {
-          root.classList.remove(className);
-        }
-      });
-      
-      root.classList.add(`theme-${theme}`);
-    }
-  }, [theme, isDarkMode, isMounted]);
+      root.classList.add(theme);
+  }, [theme]);
   
+  const isDarkMode = theme === 'dark';
+  const setDarkMode = (isDark: boolean) => {
+    setTheme(isDark ? 'dark' : 'light');
+  }
+
 
   const value: ThemeContextType = {
     theme,
     setTheme,
-    isDarkMode,
-    setDarkMode: (isDark) => setDarkMode(isDark),
     openSettings,
-    setOpenSettings
+    setOpenSettings,
+    isDarkMode,
+    setDarkMode
   };
-  
-  if (!isMounted) {
-    // on the server, we need to return the children wrapped in a div to avoid hydration errors
-    // but without any theme-specific classes
-    return (
-      <html lang="en" suppressHydrationWarning>
-        <body className="font-body antialiased">{children}</body>
-      </html>
-    );
-  }
 
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

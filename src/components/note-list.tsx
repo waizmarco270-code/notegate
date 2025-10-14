@@ -12,8 +12,8 @@ interface NoteListProps {
 
 export function NoteList({ notes, activeNoteId, onSelectNote }: NoteListProps) {
   return (
-    <ScrollArea className="flex-1">
-      <div className="p-2 space-y-1">
+    <ScrollArea className="flex-1 -mx-4">
+      <div className="px-4 space-y-1">
         {notes.length > 0 ? (
           notes.map((note) => (
             <NoteCard
@@ -26,7 +26,6 @@ export function NoteList({ notes, activeNoteId, onSelectNote }: NoteListProps) {
         ) : (
           <div className="text-center text-muted-foreground p-8">
             <p>No notes found.</p>
-            <p className="text-xs">Try creating a new note or clearing your search.</p>
           </div>
         )}
       </div>

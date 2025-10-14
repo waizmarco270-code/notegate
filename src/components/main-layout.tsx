@@ -4,20 +4,12 @@ import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { NoteView } from "@/components/note-view";
 import { useNotes } from "@/context/notes-provider";
-import { Separator } from "@/components/ui/separator";
 
 export function MainLayout() {
   const { notes, createNote, activeNote, setActiveNoteId } = useNotes();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState<{ type: 'tag' | 'category', value: string } | null>(null);
 
   const filteredNotes = notes
-    .filter((note) => {
-      if (!filter) return true;
-      if (filter.type === 'tag') return note.tags.includes(filter.value);
-      if (filter.type === 'category') return note.category === filter.value;
-      return true;
-    })
     .filter((note) =>
       note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       note.content.toLowerCase().includes(searchTerm.toLowerCase())
@@ -33,11 +25,10 @@ export function MainLayout() {
         onNewNote={createNote}
         searchTerm={searchTerm}
         onSearchTermChange={setSearchTerm}
-        onFilterChange={setFilter}
-        currentFilter={filter}
       />
-      <Separator orientation="vertical" />
-      <NoteView key={activeNote?.id} />
+      <div className="flex-1 flex flex-col">
+        <NoteView key={activeNote?.id} />
+      </div>
     </div>
   );
 }

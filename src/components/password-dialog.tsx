@@ -77,13 +77,13 @@ export function PasswordDialog({
   };
 
   const title = mode === "prompt" ? "Enter Password" : mode === 'update' ? "Update Password" : "Set Password";
-  const description = mode === "prompt" ? "This note is password protected. Please enter the password to view." : "Create a password to secure this note.";
+  const description = mode === "prompt" ? "This note is password protected." : "Create a password to secure this note.";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">{title}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -101,7 +101,7 @@ export function PasswordDialog({
           </div>
           {(mode === "set" || mode === "update") && (
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="confirm-password"הclassName="text-right">
+              <Label htmlFor="confirm-password" className="text-right">
                 Confirm
               </Label>
               <Input
