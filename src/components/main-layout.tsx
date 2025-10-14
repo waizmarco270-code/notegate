@@ -52,6 +52,7 @@ export function MainLayout() {
   const handleSelectCategory = (category: string | null) => {
     if (category === "All Notes") {
       setCategoryFilter(null);
+      setActiveNoteId(null);
     } else {
       setCategoryFilter(category);
     }
