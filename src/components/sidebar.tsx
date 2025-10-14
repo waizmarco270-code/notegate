@@ -9,6 +9,7 @@ import type { Note } from "@/lib/types";
 import { useTheme } from "@/context/theme-provider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useNotes } from "@/context/notes-provider";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   notes: Note[];
@@ -47,7 +48,6 @@ export function Sidebar({
     "Work": Briefcase,
     "Ideas": Lightbulb,
     "Favorites": Star,
-    "All Notes": Home,
   };
   
   const getActiveCategoryLabel = () => {
@@ -62,7 +62,7 @@ export function Sidebar({
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
            <Image
-            src="https://placehold.co/100x100/000000/FFFFFF/JPG?text=LOGO&font=lato"
+            src="/logo.jpg"
             alt="NotesGate Logo"
             width={28}
             height={28}
@@ -94,36 +94,39 @@ export function Sidebar({
         />
       </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-full justify-between">
-            <div className="flex items-center">
-              <ActiveIcon className="mr-2 h-4 w-4" /> {getActiveCategoryLabel()}
-            </div>
-            <ChevronDown className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-          <DropdownMenuItem onClick={() => onSelectCategory("All Notes")}>
-            <Home className="mr-2 h-4 w-4" />
-            All Notes
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onSelectCategory("Favorites")}>
-            <Star className="mr-2 h-4 w-4" />
-            Favorites
-          </DropdownMenuItem>
-          {allCategories.length > 0 && <DropdownMenuSeparator />}
-          {allCategories.map(category => {
-            const Icon = categoryIcons[category] || Folder;
-            return (
-              <DropdownMenuItem key={category} onClick={() => onSelectCategory(category)}>
-                <Icon className="mr-2 h-4 w-4" />
-                {category}
-              </DropdownMenuItem>
-            );
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <nav className="flex flex-col gap-2">
+         <Button 
+            variant={activeCategory === null ? "secondary" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => onSelectCategory("All Notes")}
+          >
+            <Home className="mr-2 h-4 w-4" /> All Notes
+        </Button>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="w-full justify-start">
+                <Folder className="mr-2 h-4 w-4" /> Categories
+            </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+            <DropdownMenuItem onClick={() => onSelectCategory("Favorites")}>
+                <Star className="mr-2 h-4 w-4" />
+                Favorites
+            </DropdownMenuItem>
+            {allCategories.length > 0 && <DropdownMenuSeparator />}
+            {allCategories.map(category => {
+                const Icon = categoryIcons[category] || Folder;
+                return (
+                <DropdownMenuItem key={category} onClick={() => onSelectCategory(category)}>
+                    <Icon className="mr-2 h-4 w-4" />
+                    {category}
+                </DropdownMenuItem>
+                );
+            })}
+            </DropdownMenuContent>
+        </DropdownMenu>
+      </nav>
+      
 
       <NoteList 
         notes={notes} 
