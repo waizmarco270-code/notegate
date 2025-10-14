@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useMemo } from "react";
+import React, { createContext, useContext, useState, useMemo, useEffect } from "react";
 import type { Note } from "@/lib/types";
 import { initialNotes } from "@/lib/data";
 import { useLocalStorage } from "@/hooks/use-local-storage";
@@ -22,7 +22,28 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes] = useLocalStorage<Note[]>("notes", initialNotes);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
 
-  const activeNote = useMemo(() => notes.find((n) => n.id === activeNoteId) ?? null, [notes, activeNoteId]);
+  useEffect(() => {
+    // On initial load, if there are no notes, set them to the initialNotes.
+    // This will clear any previously stored notes if the user wants to start fresh.
+    const storedNotes = localStorage.getItem("notes");
+    if (!storedNotes || JSON.parse(storedNotes).length === 0) {
+        setNotes(initialNotes);
+    }
+  }, [setNotes]);
+
+
+  const activeNote = useMemo(() => {
+    const sortedNotes = [...notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    const currentNote = sortedNotes.find((n) => n.id === activeNoteId);
+    return currentNote ?? (sortedNotes.length > 0 ? sortedNotes[0] : null);
+  }, [notes, activeNoteId]);
+  
+  useEffect(() => {
+    if (activeNote) {
+      setActiveNoteId(activeNote.id);
+    }
+  }, [activeNote]);
+
 
   const createNote = () => {
     const newNote: Note = {
@@ -52,7 +73,9 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   const deleteNote = (id: string) => {
     setNotes(notes.filter((note) => note.id !== id));
     if (activeNoteId === id) {
-      setActiveNoteId(null);
+      const remainingNotes = notes.filter((note) => note.id !== id);
+      const sorted = remainingNotes.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      setActiveNoteId(sorted.length > 0 ? sorted[0].id : null);
     }
   };
 
