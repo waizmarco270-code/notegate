@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
-import { ThemeProvider } from '@/context/theme-provider';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'SecureNote',
@@ -21,10 +20,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;700&family=Belleza&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <ThemeProvider>
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
