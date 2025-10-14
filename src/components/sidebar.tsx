@@ -8,6 +8,7 @@ import type { Note } from "@/lib/types";
 import { useTheme } from "@/context/theme-provider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useNotes } from "@/context/notes-provider";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   notes: Note[];
@@ -16,9 +17,11 @@ interface SidebarProps {
   onNewNote: () => void;
   searchTerm: string;
   onSearchTermChange: (term: string) => void;
+  onSelectCategory: (category: string | null) => void;
+  activeCategory: string | null;
 }
 
-export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTerm, onSearchTermChange }: SidebarProps) {
+export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTerm, onSearchTermChange, onSelectCategory, activeCategory }: SidebarProps) {
   const { isDarkMode, setDarkMode } = useTheme();
   const { allCategories } = useNotes();
 
@@ -26,8 +29,17 @@ export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTe
     "Personal": User,
     "Work": Briefcase,
     "Ideas": Lightbulb,
+    "Favorites": Star,
+    "All Notes": Home,
   };
   
+  const getActiveCategoryLabel = () => {
+    if (activeCategory === null) return "All Notes";
+    return activeCategory;
+  }
+  
+  const ActiveIcon = categoryIcons[getActiveCategoryLabel()] || Folder;
+
   return (
     <aside className="w-80 min-w-[320px] flex flex-col border-r bg-background/50 p-4 space-y-4">
       <header className="flex items-center justify-between">
@@ -55,17 +67,17 @@ export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTe
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="w-full justify-between">
             <div className="flex items-center">
-              <Home className="mr-2 h-4 w-4" /> All Notes
+              <ActiveIcon className="mr-2 h-4 w-4" /> {getActiveCategoryLabel()}
             </div>
             <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onSelectCategory("All Notes")}>
             <Home className="mr-2 h-4 w-4" />
             All Notes
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onSelectCategory("Favorites")}>
             <Star className="mr-2 h-4 w-4" />
             Favorites
           </DropdownMenuItem>
@@ -73,7 +85,7 @@ export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTe
           {allCategories.map(category => {
             const Icon = categoryIcons[category] || Folder;
             return (
-              <DropdownMenuItem key={category}>
+              <DropdownMenuItem key={category} onClick={() => onSelectCategory(category)}>
                 <Icon className="mr-2 h-4 w-4" />
                 {category}
               </DropdownMenuItem>
