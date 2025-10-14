@@ -42,6 +42,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [isCategoriesDialogOpen, setCategoriesDialogOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(note.isFavorite ?? false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summary, setSummary] = useState("");
   const [isSummaryDialogOpen, setSummaryDialogOpen] = useState(false);
@@ -214,6 +215,58 @@ export function NoteEditor({ note }: NoteEditorProps) {
     }
   };
 
+  const handleInsertImage = () => {
+    imageInputRef.current?.click();
+  };
+
+  const onImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB limit for warning
+      toast({
+        variant: "destructive",
+        title: "Large Image Warning",
+        description: "Images are stored locally and large files can slow down the app. Consider using smaller images.",
+      });
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = document.createElement("img");
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        const dataUrl = canvas.toDataURL(file.type, 0.8); // Compress to 80% quality
+        const imgTag = `<img src="${dataUrl}" style="max-width: 100%; height: auto; border-radius: 0.5rem;" />`;
+        
+        if (contentRef.current) {
+          contentRef.current.focus();
+          document.execCommand("insertHTML", false, imgTag);
+          handleContentBlur();
+        }
+      };
+    };
+    reader.readAsDataURL(file);
+
+    // Reset file input
+    if (e.target) e.target.value = '';
+  };
+
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
   const isLocked = note.password !== null;
 
@@ -327,6 +380,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         onColorChange={handleColorChange}
         onInsertUnorderedList={() => handleInsertList("insertUnorderedList")}
         onInsertOrderedList={() => handleInsertList("insertOrderedList")}
+        onInsertImage={handleInsertImage}
         onFormat={handleFormat}
         applyToAll={applyToAll}
         onApplyToAllChange={setApplyToAll}
@@ -344,6 +398,14 @@ export function NoteEditor({ note }: NoteEditorProps) {
           />
       </div>
       
+      <input
+        type="file"
+        ref={imageInputRef}
+        onChange={onImageChange}
+        className="hidden"
+        accept="image/*"
+      />
+
       <PasswordDialog
         open={isPasswordDialogOpen}
         onOpenChange={setPasswordDialogOpen}

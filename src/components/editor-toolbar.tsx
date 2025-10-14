@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette, CaseSensitive, Heading, Pilcrow } from "lucide-react";
+import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette, CaseSensitive, Heading, Pilcrow, Image } from "lucide-react";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -23,6 +23,7 @@ interface EditorToolbarProps {
   onColorChange: (color: string) => void;
   onInsertUnorderedList: () => void;
   onInsertOrderedList: () => void;
+  onInsertImage: () => void;
   onFormat: (command: string, value?: string) => void;
   applyToAll: boolean;
   onApplyToAllChange: (value: boolean) => void;
@@ -33,7 +34,7 @@ const colors = [
     "#FFA500", "#800080", "#008000", "#FFC0CB", "#A52A2A", "#808080", "#FFFFFF"
 ];
 
-export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, currentColor, onColorChange, onInsertUnorderedList, onInsertOrderedList, onFormat, applyToAll, onApplyToAllChange }: EditorToolbarProps) {
+export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, currentColor, onColorChange, onInsertUnorderedList, onInsertOrderedList, onInsertImage, onFormat, applyToAll, onApplyToAllChange }: EditorToolbarProps) {
   const numericFontSize = parseInt(fontSize.replace('px', ''), 10);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   
@@ -174,6 +175,11 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
       </Button>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
+
+      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onInsertImage}>
+        <Image className="h-4 w-4" />
+      </Button>
+      
        <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
         <PopoverTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
