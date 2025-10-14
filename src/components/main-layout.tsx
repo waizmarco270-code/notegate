@@ -4,20 +4,10 @@ import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { NoteView } from "@/components/note-view";
 import { useNotes } from "@/context/notes-provider";
-import { initialNotes } from "@/lib/data";
 
 export function MainLayout() {
-  const { notes, createNote, activeNote, setActiveNoteId, setNotes } = useNotes();
+  const { notes, createNote, activeNote, setActiveNoteId } = useNotes();
   const [searchTerm, setSearchTerm] = useState("");
-
-  useEffect(() => {
-    // This effect runs only on the client, after hydration, to clear local storage.
-    // It prevents hydration mismatches by ensuring the client starts with the same empty state as the server.
-    localStorage.removeItem("notes");
-    setNotes(initialNotes);
-    setActiveNoteId(null);
-  }, [setNotes, setActiveNoteId]);
-
 
   const filteredNotes = notes
     .filter((note) =>
@@ -36,7 +26,7 @@ export function MainLayout() {
         searchTerm={searchTerm}
         onSearchTermChange={setSearchTerm}
       />
-      <main className="flex-1 flex flex-col p-4 sm:p-6 md:p-8 bg-secondary/20 overflow-auto">
+      <main className="flex-1 flex flex-col bg-secondary/20 overflow-auto p-4 sm:p-6 md:p-8">
         <NoteView key={activeNote?.id} />
       </main>
     </div>
