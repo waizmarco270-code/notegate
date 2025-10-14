@@ -56,7 +56,7 @@ export function MainLayout() {
         onSelectCategory={handleSelectCategory}
         activeCategory={categoryFilter}
       />
-      <main className="flex-1 flex flex-col bg-secondary/20 overflow-auto">
+      <main className="flex-1 flex flex-col overflow-auto">
         <NoteView key={activeNote?.id} />
       </main>
     </div>

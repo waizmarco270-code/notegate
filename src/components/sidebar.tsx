@@ -41,7 +41,7 @@ export function Sidebar({ notes, activeNoteId, onSelectNote, onNewNote, searchTe
   const ActiveIcon = categoryIcons[getActiveCategoryLabel()] || Folder;
 
   return (
-    <aside className="w-80 min-w-[320px] flex flex-col border-r bg-background/50 p-4 space-y-4">
+    <aside className="w-80 min-w-[320px] flex flex-col bg-background/50 p-4 space-y-4">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Legendary Notes</h1>
         <Button variant="ghost" size="icon" onClick={() => setDarkMode(!isDarkMode)} aria-label="Toggle theme">
