@@ -171,12 +171,15 @@ export function NoteEditor({ note }: NoteEditorProps) {
   return (
     <div className="flex flex-col h-full bg-card rounded-lg border">
       <header className="p-4 flex items-center justify-between gap-4">
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Untitled Note"
-          className="text-3xl font-bold font-headline border-none shadow-none focus-visible:ring-0 p-0 h-auto flex-1 bg-transparent tracking-wide"
-        />
+        <div className="relative flex-1 group">
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Untitled Note"
+            className="text-4xl font-bold font-headline border-none shadow-none focus-visible:ring-0 p-0 h-auto w-full bg-transparent tracking-wide text-primary"
+          />
+           <div className="absolute bottom-0 left-0 h-0.5 w-full bg-transparent group-focus-within:bg-gradient-to-r from-transparent via-primary to-transparent group-focus-within:animate-underline-grow" />
+        </div>
         <div className="flex items-center gap-1 sm:gap-2">
             <Button onClick={handleSummarize} disabled={isSummarizing} variant="ghost" size="sm">
               <Sparkles className="h-4 w-4 mr-2" />
