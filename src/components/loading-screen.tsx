@@ -24,7 +24,7 @@ export function LoadingScreen() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground relative">
       <div className="flex flex-col items-center justify-center space-y-6 content-fade-in">
         <Image
-          src="/logo.jpg"
+          src="/logo.png"
           alt="NotesGate Logo"
           width={96}
           height={96}

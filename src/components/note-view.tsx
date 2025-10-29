@@ -50,7 +50,7 @@ export function NoteView() {
           {/* Hero Section */}
           <div className="text-center py-12 px-6 rounded-lg bg-card border shadow-sm mb-8">
             <Image
-              src="/logo.jpg"
+              src="/logo.png"
               alt="NotesGate Logo"
               width={80}
               height={80}

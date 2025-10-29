@@ -60,7 +60,7 @@ export function Sidebar({
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
            <Image
-            src="/logo.jpg"
+            src="/logo.png"
             alt="NotesGate Logo"
             width={28}
             height={28}

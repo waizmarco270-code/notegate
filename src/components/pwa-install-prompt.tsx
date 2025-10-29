@@ -68,7 +68,7 @@ export function PwaInstallPrompt() {
   return (
     <div className="fixed bottom-4 right-4 z-50 animate-in slide-in-from-bottom-10 fade-in duration-500">
       <div className="bg-background border border-border rounded-lg shadow-lg p-4 flex items-center gap-4">
-        <Image src="/logo.jpg" alt="NotesGate Logo" width={40} height={40} className="rounded-md" />
+        <Image src="/logo.png" alt="NotesGate Logo" width={40} height={40} className="rounded-md" />
         <div className="flex-grow">
           <p className="font-semibold text-foreground">Install NotesGate</p>
           <p className="text-sm text-muted-foreground">
