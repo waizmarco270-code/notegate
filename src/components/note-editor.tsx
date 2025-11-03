@@ -24,7 +24,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { summarizeNoteAction } from "@/lib/actions";
+import { summarizeNoteAction, generateTagsAction } from "@/lib/actions";
 import { SummaryDialog } from "./summary-dialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { CategoryPopover } from "./category-popover";
@@ -54,6 +54,11 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [fontFamily, setFontFamily] = useLocalStorage("editor-font-family", "Arial");
   const [currentColor, setCurrentColor] = useLocalStorage("editor-current-color", "#000000");
   const [applyToAll, setApplyToAll] = useState(false);
+  const [tags, setTags] = useState(note.tags || []);
+  const [tagInput, setTagInput] = useState("");
+  const [isGeneratingTags, setIsGeneratingTags] = useState(false);
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -70,6 +75,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   useEffect(() => {
     setIsFavorite(note.isFavorite ?? false);
     setTitle(note.title);
+    setTags(note.tags || []);
     if (contentRef.current && note.content !== contentRef.current.innerHTML) {
       contentRef.current.innerHTML = note.content || "";
     }
@@ -314,6 +320,54 @@ export function NoteEditor({ note }: NoteEditorProps) {
     // Reset file input
     if (e.target) e.target.value = '';
   };
+  
+  const handleGenerateTags = async () => {
+    const content = contentRef.current?.innerText || '';
+    if (!content) {
+      toast({ variant: "destructive", title: "Cannot generate tags for an empty note." });
+      return;
+    }
+    setIsGeneratingTags(true);
+    setSuggestedTags([]);
+    const result = await generateTagsAction({ noteContent: content });
+    setIsGeneratingTags(false);
+
+    if (result.tags) {
+      setSuggestedTags(result.tags.filter(tag => !tags.includes(tag)));
+    } else {
+      toast({ variant: "destructive", title: "Failed to generate tags.", description: result.error || "An unknown error occurred." });
+    }
+  };
+  
+  const addTag = (tag: string) => {
+    const newTag = tag.trim().toLowerCase();
+    if (newTag && !tags.includes(newTag)) {
+      const newTags = [...tags, newTag];
+      setTags(newTags);
+      updateNote({ id: note.id, tags: newTags });
+    }
+  };
+
+  const handleAddTagFromInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && tagInput) {
+      e.preventDefault();
+      addTag(tagInput);
+      setTagInput("");
+    }
+  };
+  
+  const handleAddSuggestedTag = (tag: string) => {
+    addTag(tag);
+    setSuggestedTags(suggestedTags.filter(t => t !== tag));
+  };
+
+
+  const removeTag = (tagToRemove: string) => {
+    const newTags = tags.filter((tag) => tag !== tagToRemove);
+    setTags(newTags);
+    updateNote({ id: note.id, tags: newTags });
+  };
+
 
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
   const isLocked = note.password !== null;
@@ -411,7 +465,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         </div>
       </header>
 
-      <div className="px-4 pb-2 flex items-center gap-2">
+      <div className="px-4 pb-2 flex items-center flex-wrap gap-2">
         <CategoryPopover
             note={note}
             onUpdateCategory={handleCategoryUpdate}
@@ -419,7 +473,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         >
             {note.category ? (
                 <Badge variant="secondary" className="cursor-pointer hover:bg-muted">
-                    <Tag className="h-3 w-3 mr-1" />
+                    <Folder className="h-3 w-3 mr-1.5" />
                     {note.category}
                 </Badge>
             ) : (
@@ -429,7 +483,43 @@ export function NoteEditor({ note }: NoteEditorProps) {
                 </Button>
             )}
         </CategoryPopover>
+
+        <div className="flex items-center gap-2 flex-wrap">
+            {tags.map(tag => (
+              <Badge key={tag} variant="outline" className="group">
+                {tag}
+                <button onClick={() => removeTag(tag)} className="ml-1.5 rounded-full opacity-50 group-hover:opacity-100 transition-opacity">
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+             <Input 
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleAddTagFromInput}
+                placeholder="Add a tag..."
+                className="h-7 w-28 text-xs border-dashed"
+            />
+        </div>
+        
+        <Button onClick={handleGenerateTags} disabled={isGeneratingTags} variant="ghost" size="sm" className="text-muted-foreground">
+            <Sparkles className="h-4 w-4 mr-2" />
+            {isGeneratingTags ? "Suggesting..." : "Suggest Tags"}
+        </Button>
       </div>
+
+       {suggestedTags.length > 0 && (
+          <div className="px-4 pb-4 flex items-center flex-wrap gap-2">
+              <p className="text-xs text-muted-foreground mr-2">Suggestions:</p>
+              {suggestedTags.map(tag => (
+                <Badge key={tag} variant="default" className="cursor-pointer bg-primary/10 text-primary hover:bg-primary/20" onClick={() => handleAddSuggestedTag(tag)}>
+                    <Plus className="h-3 w-3 mr-1" />
+                    {tag}
+                </Badge>
+              ))}
+          </div>
+        )}
       
       <EditorToolbar 
         fontSize={fontSize}
