@@ -77,6 +77,35 @@
         "noteId": {
           "type": "string"
         },
+        "noteData": {
+          "type": "object",
+          "description": "A snapshot of the note content at the time of sharing.",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+             "createdAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
         "status": {
           "type": "string",
           "enum": ["pending", "accepted", "rejected"]
@@ -86,7 +115,7 @@
           "format": "date-time"
         }
       },
-      "required": ["fromUserId", "toUserId", "noteId", "status", "createdAt"]
+      "required": ["fromUserId", "toUserId", "noteId", "noteData", "status", "createdAt"]
     }
   },
   "auth": {

@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore, useUser, useCollection, useDoc } from "@/firebase";
-import { collection, query, where, doc, updateDoc, deleteDoc, getDoc, serverTimestamp } from "firebase/firestore";
-import type { SharedNote, UserProfile, Note } from "@/lib/types";
+import { useFirestore, useUser, useCollection } from "@/firebase";
+import { collection, query, where, doc, deleteDoc } from "firebase/firestore";
+import type { SharedNote, UserProfile } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Loader2, Inbox, Check, X } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
@@ -31,34 +31,28 @@ function ShareRequestCard({ request }: { request: SharedNote & { id: string } })
     const { importSharedNote } = useNotes();
     const [isProcessing, setIsProcessing] = useState(false);
 
+    // Data is now embedded in the request, no need for extra fetches for the note itself.
     const fromUserRef = useMemo(() => {
         if (!firestore || !request.fromUserId) return null;
         return doc(firestore, "users", request.fromUserId);
     }, [firestore, request.fromUserId]);
     const { data: fromUser, loading: fromUserLoading } = useDoc<UserProfile>(fromUserRef);
 
-    const noteRef = useMemo(() => {
-        if (!firestore || !request.fromUserId || !request.noteId) return null;
-        return doc(firestore, `users/${request.fromUserId}/notes/${request.noteId}`);
-    }, [firestore, request.fromUserId, request.noteId]);
-    const { data: note, loading: noteLoading } = useDoc<Note>(noteRef);
-
     const handleAccept = async () => {
-        if (!firestore || !user || !note) return;
+        if (!firestore || !user || !request.noteData) return;
         setIsProcessing(true);
         try {
-            const shareRef = doc(firestore, `users/${user.uid}/inbox/${request.id}`);
-            
-            // The full note object is fetched by useDoc, we pass it to be imported
+            // The full note object is embedded in the request.noteData
             await importSharedNote({
-                ...note,
+                ...request.noteData,
                 id: request.noteId, 
             });
             
-            // After successful import, delete the share request
+            // After successful import, delete the share request from the user's inbox
+            const shareRef = doc(firestore, `users/${user.uid}/inbox/${request.id}`);
             await deleteDoc(shareRef);
 
-            toast({ title: "Note accepted!", description: `"${note.title}" has been added to your notes.` });
+            toast({ title: "Note accepted!", description: `"${request.noteData.title}" has been added to your notes.` });
 
         } catch (error) {
             console.error("Error accepting share:", error);
@@ -88,12 +82,12 @@ function ShareRequestCard({ request }: { request: SharedNote & { id: string } })
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
 
-    if (noteLoading || fromUserLoading) {
+    if (fromUserLoading) {
         return <div className="p-4 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></div>
     }
 
-    // If the original note or user was deleted, don't show the card.
-    if (!note || !fromUser) {
+    // If the sender's user data or the embedded note data is missing, don't show.
+    if (!fromUser || !request.noteData) {
         return null;
     }
 
@@ -108,7 +102,7 @@ function ShareRequestCard({ request }: { request: SharedNote & { id: string } })
                     <p className="text-sm font-semibold truncate">
                         <span className="font-bold">{fromUser.username}</span> wants to share a note:
                     </p>
-                    <p className="text-sm text-muted-foreground font-medium italic truncate">"{note.title}"</p>
+                    <p className="text-sm text-muted-foreground font-medium italic truncate">"{request.noteData.title}"</p>
                 </div>
             </div>
             <div className="flex gap-2">

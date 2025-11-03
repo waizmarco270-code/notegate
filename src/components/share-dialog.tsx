@@ -14,11 +14,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore } from "@/firebase";
-import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy, startAt, endAt } from "firebase/firestore";
-import type { UserProfile } from "@/lib/types";
+import { useFirestore, useUser } from "@/firebase";
+import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy, startAt, endAt, doc, getDoc } from "firebase/firestore";
+import type { UserProfile, Note } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Loader2 } from "lucide-react";
+import { useNotes } from "@/context/notes-provider";
 
 interface ShareDialogProps {
   open: boolean;
@@ -30,6 +31,8 @@ interface ShareDialogProps {
 export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: ShareDialogProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const { user } = useUser();
+  const { notes } = useNotes();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
@@ -41,11 +44,7 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
     if (!firestore || !searchQuery.trim()) return;
 
     const searchTerm = searchQuery.trim();
-    if (!searchTerm.startsWith('@')) {
-        toast({ variant: "destructive", title: "Invalid Search", description: "Username must start with @" });
-        return;
-    }
-
+    
     setIsSearching(true);
     setSearchResults([]);
     setSelectedUser(null);
@@ -80,18 +79,36 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
   };
 
   const handleSendRequest = async () => {
-    if (!firestore || !selectedUser) return;
+    if (!firestore || !selectedUser || !user) return;
+    
+    const noteToShare = notes.find(n => n.id === noteId);
+    if (!noteToShare) {
+        toast({ variant: "destructive", title: "Note not found", description: "Could not find the note to share." });
+        return;
+    }
 
     setIsSending(true);
     try {
       const inboxRef = collection(firestore, `users/${selectedUser.id}/inbox`);
+      
+      const noteDataPayload = {
+          title: noteToShare.title,
+          content: noteToShare.content,
+          category: noteToShare.category,
+          tags: noteToShare.tags,
+          createdAt: noteToShare.createdAt,
+          updatedAt: noteToShare.updatedAt,
+      };
+
       await addDoc(inboxRef, {
         fromUserId: currentUserId,
         toUserId: selectedUser.id,
         noteId: noteId,
+        noteData: noteDataPayload, // Embed note data directly
         status: "pending",
         createdAt: serverTimestamp(),
       });
+
       toast({ title: "Share request sent!", description: `Your note has been shared with ${selectedUser.username}.` });
       onOpenChange(false);
     } catch (error) {
@@ -136,6 +153,7 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Start typing a username, e.g., @john..."
+                  autoComplete="off"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isSearching}>
