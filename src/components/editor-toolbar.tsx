@@ -2,11 +2,11 @@
 "use client";
 
 import { useState } from "react";
-import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette, CaseSensitive, Heading, Pilcrow, Image, Text, CaseUpper, CaseLower, Type, Columns, PanelRightClose } from "lucide-react";
+import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette, CaseSensitive, Heading, Pilcrow, Image, Text, CaseUpper, CaseLower, Type, Columns, PanelRightClose, Sparkles, Languages } from "lucide-react";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuPortal, DropdownMenuSubContent, DropdownMenuSeparator } from "./ui/dropdown-menu";
 import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -30,6 +30,8 @@ interface EditorToolbarProps {
   onApplyToAllChange: (value: boolean) => void;
   isBilingualMode: boolean;
   onToggleBilingualMode: () => void;
+  onAiWritingAction: (command: string) => void;
+  onTranslate: () => void;
 }
 
 const colors = [
@@ -44,7 +46,8 @@ export function EditorToolbar({
     onInsertUnorderedList, onInsertOrderedList, onInsertImage, 
     onFormat, onConvertCase, 
     applyToAll, onApplyToAllChange,
-    isBilingualMode, onToggleBilingualMode
+    isBilingualMode, onToggleBilingualMode,
+    onAiWritingAction, onTranslate
 }: EditorToolbarProps) {
   const numericFontSize = parseInt(fontSize.replace('px', ''), 10);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
@@ -223,6 +226,38 @@ export function EditorToolbar({
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
+       <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Sparkles className="h-4 w-4"/>
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+            <DropdownMenuItem onSelect={() => onAiWritingAction("Improve Writing")}>Improve Writing</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onAiWritingAction("Fix Spelling & Grammar")}>Fix Spelling & Grammar</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => onAiWritingAction("Make Shorter")}>Make Shorter</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onAiWritingAction("Make Longer")}>Make Longer</DropdownMenuItem>
+            <DropdownMenuSeparator />
+             <DropdownMenuSub>
+                <DropdownMenuSubTrigger>Change Tone</DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                    <DropdownMenuItem onSelect={() => onAiWritingAction("Change Tone to Professional")}>Professional</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => onAiWritingAction("Change Tone to Casual")}>Casual</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => onAiWritingAction("Change Tone to Confident")}>Confident</DropdownMenuItem>
+                </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+            </DropdownMenuSub>
+        </DropdownMenuContent>
+     </DropdownMenu>
+
+      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onTranslate}>
+        <Languages className="h-4 w-4" />
+      </Button>
+
+      <Separator orientation="vertical" className="h-6 mx-1" />
+      
        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onToggleBilingualMode}>
         {isBilingualMode ? <PanelRightClose className="h-4 w-4" /> : <Columns className="h-4 w-4" />}
       </Button>
@@ -236,5 +271,3 @@ export function EditorToolbar({
     </div>
   );
 }
-
-    

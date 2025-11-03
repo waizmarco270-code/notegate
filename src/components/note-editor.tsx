@@ -84,7 +84,6 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [isBilingualTranslating, setIsBilingualTranslating] = useState(false);
 
   // States for Selection Popover
-  const [selectionPopoverOpen, setSelectionPopoverOpen] = useState(false);
   const [selectionRange, setSelectionRange] = useState<Range | null>(null);
 
   // AI Writing Assistant states
@@ -113,29 +112,6 @@ export function NoteEditor({ note }: NoteEditorProps) {
       contentRef.current.innerHTML = note.content || "";
     }
   }, [note]);
-  
-  useEffect(() => {
-    const handler = () => {
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            if (!range.collapsed && contentRef.current?.contains(range.commonAncestorContainer)) {
-                setSelectionRange(range);
-                setSelectionPopoverOpen(true);
-            } else {
-                setSelectionPopoverOpen(false);
-            }
-        } else {
-            setSelectionPopoverOpen(false);
-        }
-    };
-    
-    document.addEventListener('selectionchange', handler);
-
-    return () => {
-        document.removeEventListener('selectionchange', handler);
-    };
-  }, []);
 
   const debouncedTranslate = useMemo(
     () =>
@@ -520,7 +496,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
-        if (contentRef.current?.contains(range.commonAncestorContainer)) {
+        if (!range.collapsed && contentRef.current?.contains(range.commonAncestorContainer)) {
           const div = document.createElement("div");
           div.appendChild(range.cloneContents());
           return div.innerHTML;
@@ -532,9 +508,10 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const getSelectedText = () => {
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
-        return selection.toString();
+        const text = selection.toString();
+        if (text.trim() !== '') return text;
     }
-    return "";
+    return contentRef.current?.innerText || "";
   }
 
   const handleShareOnWhatsApp = () => {
@@ -550,10 +527,18 @@ export function NoteEditor({ note }: NoteEditorProps) {
   
   const handleAiWritingAction = async (command: string) => {
     const selectedText = getSelectedText();
+    const selection = window.getSelection();
+
     if (!selectedText) {
-      toast({ variant: "destructive", title: "Please select text first." });
+      toast({ variant: "destructive", title: "Please select text first, or write something." });
       return;
     }
+    if (selection && selection.rangeCount > 0) {
+        setSelectionRange(selection.getRangeAt(0).cloneRange());
+    } else {
+        setSelectionRange(null);
+    }
+    
     setIsAiWriting(true);
     setAiActionTitle(command);
     setAiResultDialogOpen(true);
@@ -785,49 +770,9 @@ export function NoteEditor({ note }: NoteEditorProps) {
         onApplyToAllChange={setApplyToAll}
         isBilingualMode={isBilingualMode}
         onToggleBilingualMode={handleToggleBilingualMode}
+        onAiWritingAction={handleAiWritingAction}
+        onTranslate={() => setTranslateDialogOpen(true)}
       />
-      
-      <Popover open={selectionPopoverOpen} onOpenChange={setSelectionPopoverOpen}>
-          <PopoverTrigger asChild>
-            <div className="absolute" style={{
-                top: `${selectionRange ? selectionRange.getBoundingClientRect().top - 45 : -100}px`,
-                left: `${selectionRange ? selectionRange.getBoundingClientRect().left + selectionRange.getBoundingClientRect().width / 2 : -100}px`,
-                transform: 'translateX(-50%)',
-            }} />
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-1 flex gap-1">
-             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                        <Sparkles className="h-4 w-4 mr-2"/>
-                        AI Tools
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuItem onSelect={() => handleAiWritingAction("Improve Writing")}>Improve Writing</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => handleAiWritingAction("Fix Spelling & Grammar")}>Fix Spelling & Grammar</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => handleAiWritingAction("Make Shorter")}>Make Shorter</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => handleAiWritingAction("Make Longer")}>Make Longer</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                     <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>Change Tone</DropdownMenuSubTrigger>
-                        <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                            <DropdownMenuItem onSelect={() => handleAiWritingAction("Change Tone to Professional")}>Professional</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleAiWritingAction("Change Tone to Casual")}>Casual</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleAiWritingAction("Change Tone to Confident")}>Confident</DropdownMenuItem>
-                        </DropdownMenuSubContent>
-                        </DropdownMenuPortal>
-                    </DropdownMenuSub>
-                </DropdownMenuContent>
-             </DropdownMenu>
-             <Button variant="ghost" size="sm" onClick={() => setTranslateDialogOpen(true)}>
-                <Languages className="h-4 w-4 mr-2"/>
-                Translate
-             </Button>
-          </PopoverContent>
-      </Popover>
       
       <div className={cn("flex-1 overflow-hidden flex", isBilingualMode ? "flex-row" : "flex-col")}>
         <div className={cn("overflow-auto p-4 sm:p-6 relative", isBilingualMode ? "w-1/2" : "w-full h-full")}>
@@ -836,7 +781,6 @@ export function NoteEditor({ note }: NoteEditorProps) {
               contentEditable={true}
               onInput={handleContentChange}
               onBlur={handleContentBlur}
-              onContextMenu={(e) => e.preventDefault()}
               dangerouslySetInnerHTML={{ __html: note.content }}
               data-placeholder="Start writing..."
               className="h-full w-full outline-none text-base empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground"
@@ -937,7 +881,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         onOpenChange={setTranslateDialogOpen}
         noteContent={getSelectedHTML()}
         onReplaceContent={handleReplaceContent}
-        isSelection={selectionPopoverOpen}
+        isSelection={!!selectionRange}
       />
       {user && (
         <ShareDialog 
