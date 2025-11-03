@@ -204,41 +204,55 @@ export function NoteEditor({ note }: NoteEditorProps) {
     if (contentRef.current) {
       contentRef.current.focus();
       if (applyToAll) {
-        handleSelectAll();
+        document.execCommand("selectAll", false, undefined);
       }
       document.execCommand(command, false, value);
       if (applyToAll) {
         const selection = window.getSelection();
-        selection?.removeAllRanges();
+        selection?.collapseToEnd();
       }
       handleContentBlur();
     }
   };
   
   const handleConvertCase = (caseType: 'upper' | 'lower' | 'title' | 'sentence') => {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
+    if (!contentRef.current) return;
+    contentRef.current.focus();
 
-    const range = selection.getRangeAt(0);
-    const selectedText = range.toString();
+    const selection = window.getSelection();
+    let textToConvert = "";
+    let isFullContent = false;
+
+    if (applyToAll || !selection || selection.rangeCount === 0 || selection.toString().trim() === '') {
+        textToConvert = contentRef.current.innerText;
+        isFullContent = true;
+    } else {
+        const range = selection.getRangeAt(0);
+        textToConvert = range.toString();
+    }
+
+    if (!textToConvert) return;
     
     let convertedText = "";
     switch (caseType) {
         case 'upper':
-            convertedText = selectedText.toUpperCase();
+            convertedText = textToConvert.toUpperCase();
             break;
         case 'lower':
-            convertedText = selectedText.toLowerCase();
+            convertedText = textToConvert.toLowerCase();
             break;
         case 'title':
-            convertedText = selectedText.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+            convertedText = textToConvert.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
             break;
         case 'sentence':
-            convertedText = selectedText.toLowerCase().replace(/(^\w{1}|\.\s*\w{1})/g, char => char.toUpperCase());
+            convertedText = textToConvert.toLowerCase().replace(/(^\w{1}|\.\s*\w{1})/g, char => char.toUpperCase());
             break;
     }
 
-    if (selectedText) {
+    if (isFullContent) {
+        contentRef.current.innerText = convertedText;
+        handleContentBlur();
+    } else if (selection) {
         document.execCommand("insertText", false, convertedText);
     }
   };
