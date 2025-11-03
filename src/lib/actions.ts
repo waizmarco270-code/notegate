@@ -3,7 +3,7 @@
 import { summarizeNote, SummarizeNoteInput } from "@/ai/flows/ai-summarize-note";
 import { generateTags, GenerateTagsInput } from "@/ai/flows/ai-generate-tags";
 import { textToSpeech, TextToSpeechInput } from "@/ai/flows/ai-text-to-speech";
-import { translateNote, TranslateNoteInput } from "@/ai/flows/ai-translate-note";
+import { translateNote, TranslateNoteInput, TranslateNoteOutput } from "@/ai/flows/ai-translate-note";
 import { z } from "zod";
 
 const summarizeSchema = z.object({
@@ -68,7 +68,7 @@ const translateNoteSchema = z.object({
   targetLanguage: z.string(),
 });
 
-export async function translateNoteAction(input: TranslateNoteInput) {
+export async function translateNoteAction(input: TranslateNoteInput): Promise<Partial<TranslateNoteOutput> & { error?: string }> {
     const parsedInput = translateNoteSchema.safeParse(input);
     if (!parsedInput.success) {
         return { error: "Invalid input" };
@@ -76,7 +76,7 @@ export async function translateNoteAction(input: TranslateNoteInput) {
 
     try {
         const result = await translateNote(parsedInput.data);
-        return { translatedContent: result.translatedContent };
+        return result;
     } catch (e) {
         console.error(e);
         return { error: "Failed to translate note. Please try again." };

@@ -20,6 +20,7 @@ export type TranslateNoteInput = z.infer<typeof TranslateNoteInputSchema>;
 
 const TranslateNoteOutputSchema = z.object({
   translatedContent: z.string().describe('The translated HTML content, with original HTML tags and structure preserved.'),
+  transliteration: z.string().optional().describe('If the translated text is in a non-Latin script, provide its Roman alphabet transliteration. For example, for Japanese "こんにちは世界", provide "Konnichiwa Sekai".'),
 });
 export type TranslateNoteOutput = z.infer<typeof TranslateNoteOutputSchema>;
 
@@ -39,7 +40,8 @@ IMPORTANT:
 - Do not add or remove any HTML tags.
 - For <img> tags, do not translate the 'src' attribute.
 - If the targetLanguage is "Hinglish", you must translate it to the Hindi language but write it using the Roman (English) alphabet. For example, "What is your name?" becomes "Aapka naam kya hai?".
-- Your final output must be a valid HTML string.
+- If the translated text is in a non-Latin script (like Japanese, Hindi, Arabic, Russian, etc.), you MUST also provide a transliteration of the translated text in the Roman (English) alphabet in the 'transliteration' field. For example, if you translate to Japanese "こんにちは世界", the transliteration should be "Konnichiwa Sekai".
+- Your final output must be a valid HTML string for 'translatedContent'.
 
 HTML Content to Translate:
 {{{noteContent}}}`,

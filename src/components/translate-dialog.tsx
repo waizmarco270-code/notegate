@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Languages, Loader2, Replace, Star, Columns, Upload, FileDown, Save } from "lucide-react";
+import { Languages, Loader2, Replace, Star, Upload, FileDown, Save, FileText } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -34,6 +34,7 @@ import {
 import { translateNoteAction } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "./ui/input";
+import { Separator } from "./ui/separator";
 
 interface TranslateDialogProps {
   open: boolean;
@@ -72,6 +73,7 @@ export function TranslateDialog({
   const [targetLanguage, setTargetLanguage] = useState("Hinglish");
   const [originalContent, setOriginalContent] = useState(noteContent);
   const [translatedContent, setTranslatedContent] = useState("");
+  const [transliteration, setTransliteration] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [fileName, setFileName] = useState("document");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -84,11 +86,15 @@ export function TranslateDialog({
     }
     setIsTranslating(true);
     setTranslatedContent("");
+    setTransliteration(null);
     const result = await translateNoteAction({ noteContent: originalContent, targetLanguage });
     setIsTranslating(false);
 
     if (result.translatedContent) {
         setTranslatedContent(result.translatedContent);
+        if (result.transliteration) {
+          setTransliteration(result.transliteration);
+        }
     } else {
         toast({
             variant: "destructive",
@@ -148,18 +154,18 @@ export function TranslateDialog({
     if (!isOpen) {
         setOriginalContent(noteContent); // Reset original content on close
         setTranslatedContent("");
+        setTransliteration(null);
         setIsTranslating(false);
         setFileName("document");
     }
     onOpenChange(isOpen);
   }
   
-  // Update content when dialog opens with new selection
-  useState(() => {
+  useEffect(() => {
     if (open) {
       setOriginalContent(noteContent);
     }
-  });
+  }, [open, noteContent]);
 
 
   return (
@@ -214,13 +220,13 @@ export function TranslateDialog({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[50vh]">
             <div>
                 <h3 className="text-sm font-semibold mb-2 text-muted-foreground">Original</h3>
-                <ScrollArea className="rounded-md border p-4 h-64 bg-secondary/20">
+                <ScrollArea className="rounded-md border p-4 h-full bg-secondary/20">
                     <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: originalContent || "<p>Nothing to translate.</p>"}} />
                 </ScrollArea>
             </div>
-            <div>
-                <h3 className="text-sm font-semibold mb-2 text-muted-foreground">Translation ({targetLanguage})</h3>
-                <ScrollArea className="rounded-md border p-4 h-64">
+            <div className="flex flex-col gap-2">
+                <h3 className="text-sm font-semibold text-muted-foreground">Translation ({targetLanguage})</h3>
+                <ScrollArea className="rounded-md border p-4 flex-1">
                     {isTranslating ? (
                         <div className="flex items-center justify-center h-full">
                             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -229,6 +235,14 @@ export function TranslateDialog({
                         <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: translatedContent || `<p>Translation will appear here.</p>` }} />
                     )}
                 </ScrollArea>
+                {transliteration && (
+                  <>
+                    <h3 className="text-sm font-semibold text-muted-foreground mt-2">Romanization</h3>
+                    <ScrollArea className="rounded-md border p-4 h-24 bg-muted/30">
+                       <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: transliteration }} />
+                    </ScrollArea>
+                  </>
+                )}
             </div>
         </div>
 
