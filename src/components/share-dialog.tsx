@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,11 +15,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useUser } from "@/firebase";
-import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy, startAt, endAt, doc, getDoc } from "firebase/firestore";
-import type { UserProfile, Note } from "@/lib/types";
+import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy, startAt, endAt, limit } from "firebase/firestore";
+import type { UserProfile } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
+import { debounce } from "lodash";
 
 interface ShareDialogProps {
   open: boolean;
@@ -31,7 +32,6 @@ interface ShareDialogProps {
 export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: ShareDialogProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
-  const { user } = useUser();
   const { notes } = useNotes();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
@@ -39,47 +39,62 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
   const [isSearching, setIsSearching] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!firestore || !searchQuery.trim()) return;
-
-    const searchTerm = searchQuery.trim();
-    
-    setIsSearching(true);
-    setSearchResults([]);
-    setSelectedUser(null);
-    
-    const usersRef = collection(firestore, "users");
-    // Use a range query for "starts with" search
-    const q = query(
-        usersRef, 
-        orderBy("username"), 
-        startAt(searchTerm), 
-        endAt(searchTerm + '\uf8ff')
-    );
-    
-    try {
-      const querySnapshot = await getDocs(q);
-      const users: UserProfile[] = [];
-      querySnapshot.forEach((doc) => {
-        // Exclude current user from search results
-        if (doc.id !== currentUserId) {
-          users.push({ id: doc.id, ...(doc.data() as Omit<UserProfile, 'id'>) });
+  const debouncedSearch = useMemo(
+    () =>
+      debounce(async (searchTerm: string) => {
+        if (!firestore || searchTerm.length < 3) {
+          setSearchResults([]);
+          setIsSearching(false);
+          return;
         }
-      });
-      setSearchResults(users);
-      if (users.length === 0) {
-        toast({ variant: "destructive", title: "User not found." });
-      }
-    } catch (error) {
-      console.error("Error searching for user:", error);
-      toast({ variant: "destructive", title: "Search failed", description: "An error occurred while searching." });
+
+        setIsSearching(true);
+        setSearchResults([]);
+
+        const searchField = searchTerm.startsWith('@') ? 'username' : 'name';
+        const searchValue = searchTerm.startsWith('@') ? searchTerm : searchTerm.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+
+        const usersRef = collection(firestore, "users");
+        const q = query(
+            usersRef, 
+            orderBy(searchField), 
+            startAt(searchValue), 
+            endAt(searchValue + '\uf8ff'),
+            limit(10)
+        );
+        
+        try {
+          const querySnapshot = await getDocs(q);
+          const users: UserProfile[] = [];
+          querySnapshot.forEach((doc) => {
+            if (doc.id !== currentUserId) {
+              users.push({ id: doc.id, ...(doc.data() as Omit<UserProfile, 'id'>) });
+            }
+          });
+          setSearchResults(users);
+        } catch (error) {
+          console.error("Error searching for user:", error);
+          toast({ variant: "destructive", title: "Search failed", description: "An error occurred while searching." });
+        }
+        setIsSearching(false);
+      }, 300),
+    [firestore, currentUserId, toast]
+  );
+
+  useEffect(() => {
+    if (searchQuery.trim().length >= 3) {
+      setIsSearching(true);
+      debouncedSearch(searchQuery.trim());
+    } else {
+      setSearchResults([]);
+      setIsSearching(false);
+      debouncedSearch.cancel();
     }
-    setIsSearching(false);
-  };
+  }, [searchQuery, debouncedSearch]);
+
 
   const handleSendRequest = async () => {
-    if (!firestore || !selectedUser || !user) return;
+    if (!firestore || !selectedUser || !currentUserId) return;
     
     const noteToShare = notes.find(n => n.id === noteId);
     if (!noteToShare) {
@@ -104,7 +119,7 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
         fromUserId: currentUserId,
         toUserId: selectedUser.id,
         noteId: noteId,
-        noteData: noteDataPayload, // Embed note data directly
+        noteData: noteDataPayload,
         status: "pending",
         createdAt: serverTimestamp(),
       });
@@ -130,6 +145,7 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
         setSelectedUser(null);
         setIsSearching(false);
         setIsSending(false);
+        debouncedSearch.cancel();
     }
     onOpenChange(isOpen);
   }
@@ -140,50 +156,55 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
         <DialogHeader>
           <DialogTitle>Share Note</DialogTitle>
           <DialogDescription>
-            Search for a NotesGate user by their username (e.g., @johndoe) to share this note with.
+            Search for a NotesGate user by their name or @username.
           </DialogDescription>
         </DialogHeader>
         
         {!selectedUser ? (
-            <form onSubmit={handleSearch} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username-search">Username</Label>
+            <div className="space-y-2">
+              <div className="relative">
+                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="username-search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Start typing a username, e.g., @john..."
+                  placeholder="Search by name or @username..."
                   autoComplete="off"
+                  className="pl-9"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isSearching}>
-                {isSearching && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Search User
-              </Button>
-            </form>
-        ) : null}
-
-        {isSearching && <div className="text-center p-4">Searching...</div>}
-        
-        {searchResults.length > 0 && !selectedUser && (
-           <div className="space-y-2 pt-4">
-             <Label>Search Results</Label>
-             <div className="rounded-md border max-h-40 overflow-y-auto">
-                {searchResults.map(user => (
-                    <div key={user.id} onClick={() => setSelectedUser(user)} className="flex items-center gap-3 p-2 hover:bg-secondary cursor-pointer border-b last:border-b-0">
-                         <Avatar className="h-9 w-9">
-                           <AvatarImage src={user.photoURL || ''} alt={user.name || 'User'} />
-                           <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="font-semibold text-sm">{user.name}</p>
-                            <p className="text-xs text-muted-foreground">{user.username}</p>
-                        </div>
+            
+              <div className="space-y-2 pt-2 min-h-[6rem]">
+                {isSearching && (
+                    <div className="flex items-center justify-center p-4 text-muted-foreground">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <span>Searching...</span>
                     </div>
-                ))}
-             </div>
-           </div>
-        )}
+                )}
+                {!isSearching && searchResults.length > 0 && (
+                   <div className="rounded-md border max-h-48 overflow-y-auto">
+                      {searchResults.map(user => (
+                          <div key={user.id} onClick={() => setSelectedUser(user)} className="flex items-center gap-3 p-2 hover:bg-secondary cursor-pointer border-b last:border-b-0">
+                               <Avatar className="h-9 w-9">
+                                 <AvatarImage src={user.photoURL || ''} alt={user.name || 'User'} />
+                                 <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                  <p className="font-semibold text-sm">{user.name}</p>
+                                  <p className="text-xs text-muted-foreground">{user.username}</p>
+                              </div>
+                          </div>
+                      ))}
+                   </div>
+                )}
+                 {!isSearching && searchQuery.length >= 3 && searchResults.length === 0 && (
+                     <div className="text-center p-4 text-sm text-muted-foreground">
+                        No users found.
+                    </div>
+                 )}
+              </div>
+            </div>
+        ) : null}
 
         {selectedUser && (
             <div className="space-y-4 pt-4">
@@ -199,7 +220,7 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button variant="ghost" onClick={() => setSelectedUser(null)} disabled={isSending}>Back to search</Button>
+                    <Button variant="ghost" onClick={() => { setSelectedUser(null); setSearchQuery(''); }} disabled={isSending}>Back to search</Button>
                     <Button onClick={handleSendRequest} disabled={isSending}>
                       {isSending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       Send Share Request
