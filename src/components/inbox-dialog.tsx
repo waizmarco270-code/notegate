@@ -35,7 +35,7 @@ function ShareRequestCard({ request }: { request: SharedNote & { id: string } })
         if (!firestore || !request.fromUserId) return null;
         return doc(firestore, "users", request.fromUserId);
     }, [firestore, request.fromUserId]);
-    const { data: fromUser } = useDoc<UserProfile>(fromUserRef);
+    const { data: fromUser, loading: fromUserLoading } = useDoc<UserProfile>(fromUserRef);
 
     const noteRef = useMemo(() => {
         if (!firestore || !request.fromUserId || !request.noteId) return null;
@@ -48,16 +48,17 @@ function ShareRequestCard({ request }: { request: SharedNote & { id: string } })
         setIsProcessing(true);
         try {
             const shareRef = doc(firestore, `users/${user.uid}/inbox/${request.id}`);
-            await updateDoc(shareRef, { status: "accepted" });
             
-            importSharedNote({
+            await importSharedNote({
                 ...note,
-                // Ensure id is present if it's not on the note object itself from firestore
-                id: note.id || request.noteId, 
+                id: request.noteId, 
             });
+            
+            await updateDoc(shareRef, { status: "accepted" });
+            await deleteDoc(shareRef);
 
             toast({ title: "Note accepted!", description: `"${note.title}" has been added to your notes.` });
-            await deleteDoc(shareRef);
+
         } catch (error) {
             console.error("Error accepting share:", error);
             toast({ variant: "destructive", title: "Accept failed", description: "Could not accept the note." });
@@ -85,26 +86,28 @@ function ShareRequestCard({ request }: { request: SharedNote & { id: string } })
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
 
-    if (noteLoading) {
-        return <div className="p-4 text-center">Loading note...</div>
+    if (noteLoading || fromUserLoading) {
+        return <div className="p-4 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></div>
     }
 
     if (!note || !fromUser) {
+        // This can happen if the note or user was deleted, or due to permission errors.
+        // We can optionally delete this broken share request.
         return null;
     }
 
     return (
         <div className="flex items-center justify-between gap-3 p-3 rounded-md border bg-secondary">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 overflow-hidden">
                 <Avatar className="h-10 w-10">
                     <AvatarImage src={fromUser.photoURL || ''} alt={fromUser.name || 'User'} />
                     <AvatarFallback>{getInitials(fromUser.name)}</AvatarFallback>
                 </Avatar>
-                <div>
-                    <p className="text-sm font-semibold">
-                        <span className="font-bold">{fromUser.username}</span> wants to share a note with you:
+                <div className="flex-1 overflow-hidden">
+                    <p className="text-sm font-semibold truncate">
+                        <span className="font-bold">{fromUser.username}</span> wants to share a note:
                     </p>
-                    <p className="text-sm text-muted-foreground font-medium italic">"{note.title}"</p>
+                    <p className="text-sm text-muted-foreground font-medium italic truncate">"{note.title}"</p>
                 </div>
             </div>
             <div className="flex gap-2">

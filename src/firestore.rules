@@ -1,0 +1,35 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check ownership
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Users can read other users' public profiles to search for them
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if isOwner(userId);
+    }
+
+    // Users can only read and write their own notes
+    match /users/{userId}/notes/{noteId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Allow a user to read a specific note from another user if they have a pending or accepted share request for it
+    match /users/{sharerId}/notes/{noteId} {
+      allow get: if request.auth != null && (
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)/inbox/$(noteId)) ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)/inbox/$(noteId)).data.status == 'pending'
+      );
+    }
+
+    // Users can only manage their own inbox
+    match /users/{userId}/inbox/{shareId} {
+      allow read, write: if isOwner(userId);
+    }
+  }
+}
