@@ -156,7 +156,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
             setBilingualTranslatedContent(`<p class="text-destructive">${result.error || "Translation failed."}</p>`);
         }
       }, 1000), 
-    [isBilingualMode, bilingualTargetLanguage]
+    [isBilingualMode]
   );
   
   const handleContentChange = () => {
@@ -172,8 +172,6 @@ export function NoteEditor({ note }: NoteEditorProps) {
     if (currentContent !== note.content) {
       updateNote({ id: note.id, content: currentContent });
     }
-    // Don't hide the popover on blur, only on mouse up or click outside
-    // setSelectionPopoverOpen(false); 
   };
 
 
@@ -509,8 +507,9 @@ export function NoteEditor({ note }: NoteEditorProps) {
   };
   
   const handleApplyBilingualTranslation = () => {
-    if (bilingualTranslatedContent) {
-      handleReplaceContent(bilingualTranslatedContent);
+    if (bilingualTranslatedContent && contentRef.current) {
+      contentRef.current.innerHTML = bilingualTranslatedContent;
+      handleContentBlur();
     }
   };
   
@@ -525,9 +524,11 @@ export function NoteEditor({ note }: NoteEditorProps) {
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
-        const div = document.createElement("div");
-        div.appendChild(range.cloneContents());
-        return div.innerHTML;
+        if (contentRef.current?.contains(range.commonAncestorContainer)) {
+          const div = document.createElement("div");
+          div.appendChild(range.cloneContents());
+          return div.innerHTML;
+        }
     }
     return note.content || "";
   }

@@ -152,11 +152,14 @@ export function TranslateDialog({
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
-        setOriginalContent(noteContent); // Reset original content on close
+        // Don't reset originalContent here on close to persist it until next open
         setTranslatedContent("");
         setTransliteration(null);
         setIsTranslating(false);
-        setFileName("document");
+        if (isDocumentMode) {
+          setOriginalContent("");
+          setFileName("document");
+        }
     }
     onOpenChange(isOpen);
   }
