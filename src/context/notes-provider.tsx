@@ -28,7 +28,7 @@ interface NotesContextType {
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
 
 export const PREDEFINED_CATEGORIES = ["Personal", "Work", "Ideas"];
-const MAX_HISTORY_LENGTH = 10;
+const MAX_HISTORY_LENGTH = 20;
 
 
 export function NotesProvider({ children }: { children: React.ReactNode }) {
@@ -77,8 +77,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   
           // Create a history entry only if title or content is changing
           const shouldCreateHistory = 
-            (updatedFields.title && updatedFields.title !== originalNote.title) ||
-            (updatedFields.content && updatedFields.content !== originalNote.content);
+            ('title' in updatedFields && updatedFields.title !== originalNote.title) ||
+            ('content' in updatedFields && updatedFields.content !== originalNote.content);
 
           let newHistory = originalNote.history || [];
 

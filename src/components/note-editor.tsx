@@ -505,8 +505,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   
   const handleApplyBilingualTranslation = () => {
     if (bilingualTranslatedContent && contentRef.current) {
-      contentRef.current.innerHTML = bilingualTranslatedContent;
-      handleContentBlur();
+      updateNote({ id: note.id, content: bilingualTranslatedContent });
     }
   };
   
@@ -837,6 +836,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
               contentEditable={true}
               onInput={handleContentChange}
               onBlur={handleContentBlur}
+              onContextMenu={(e) => e.preventDefault()}
               dangerouslySetInnerHTML={{ __html: note.content }}
               data-placeholder="Start writing..."
               className="h-full w-full outline-none text-base empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground"
