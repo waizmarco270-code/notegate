@@ -59,6 +59,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
     if (!signupUsername.startsWith('@')) {
         setError("Username must start with @");
+        toast({ variant: "destructive", title: "Sign Up Failed", description: "Username must start with @" });
         return;
     }
 

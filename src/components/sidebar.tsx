@@ -1,13 +1,13 @@
 "use client";
 
-import { Home, Plus, Search, Moon, Sun, Star, Briefcase, Lightbulb, ChevronDown, Folder, Settings, User } from "lucide-react";
+import { Home, Plus, Search, Moon, Sun, Star, Briefcase, Lightbulb, ChevronDown, Folder, Settings, User, LogOut } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NoteList } from "@/components/note-list";
 import type { Note } from "@/lib/types";
 import { useTheme } from "@/context/theme-provider";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { useNotes } from "@/context/notes-provider";
 import { cn } from "@/lib/utils";
 import { AuthDialog } from "./auth-dialog";
@@ -65,7 +65,8 @@ export function Sidebar({
     auth?.signOut();
   }
 
-  const getInitials = (name = "") => {
+  const getInitials = (name?: string | null) => {
+    if (!name) return "";
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   }
 
@@ -111,7 +112,8 @@ export function Sidebar({
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
-                    Log out
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
