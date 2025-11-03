@@ -56,6 +56,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  .note-link {
+    @apply text-primary bg-primary/10 px-1 py-0.5 rounded-sm cursor-pointer hover:bg-primary/20 transition-colors;
+  }
 }
 
 @layer utilities {

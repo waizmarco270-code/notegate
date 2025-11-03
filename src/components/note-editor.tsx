@@ -40,6 +40,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { WhatsappLogo } from "./icons";
+import { LinkPopover } from "./link-popover";
 
 interface NoteEditorProps {
   note: Note;
@@ -50,7 +51,7 @@ const supportedLanguages = [
 ];
 
 export function NoteEditor({ note }: NoteEditorProps) {
-  const { updateNote, deleteNote } = useNotes();
+  const { updateNote, deleteNote, notes, setActiveNoteId } = useNotes();
   const { toast } = useToast();
   const { user } = useUser();
   const [title, setTitle] = useState(note.title);
@@ -91,6 +92,11 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [aiGeneratedContent, setAiGeneratedContent] = useState("");
   const [isAiResultDialogOpen, setAiResultDialogOpen] = useState(false);
   const [aiActionTitle, setAiActionTitle] = useState("");
+  
+  // Link popover states
+  const [linkPopoverOpen, setLinkPopoverOpen] = useState(false);
+  const [linkPopoverPosition, setLinkPopoverPosition] = useState({ top: 0, left: 0 });
+  const [linkQuery, setLinkQuery] = useState("");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -138,12 +144,45 @@ export function NoteEditor({ note }: NoteEditorProps) {
         setIsBilingualTranslating(true);
         debouncedTranslate(currentContent, bilingualTargetLanguage);
     }
+    
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const node = range.startContainer;
+      
+      if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+        const text = node.textContent.substring(0, range.startOffset);
+        const match = /\[\[([\w\s]*)$/.exec(text);
+
+        if (match) {
+          setLinkQuery(match[1]);
+          const rect = range.getBoundingClientRect();
+          setLinkPopoverPosition({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX });
+          setLinkPopoverOpen(true);
+        } else {
+          setLinkPopoverOpen(false);
+        }
+      } else {
+        setLinkPopoverOpen(false);
+      }
+    }
   };
 
   const handleContentBlur = () => {
     const currentContent = contentRef.current?.innerHTML || "";
     if (currentContent !== note.content) {
       updateNote({ id: note.id, content: currentContent });
+    }
+  };
+  
+   const handleEditorClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'A' && target.dataset.noteLink === 'true') {
+      e.preventDefault();
+      const noteId = target.dataset.noteId;
+      if (noteId) {
+        setActiveNoteId(noteId);
+      }
     }
   };
 
@@ -561,6 +600,41 @@ export function NoteEditor({ note }: NoteEditorProps) {
     setAiResultDialogOpen(false);
   }
 
+  const handleSelectLink = (linkedNote: Note) => {
+    setLinkPopoverOpen(false);
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || !contentRef.current) return;
+
+    const range = selection.getRangeAt(0);
+    const node = range.startContainer;
+
+    if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+      const text = node.textContent;
+      const match = /\[\[([\w\s]*)$/.exec(text.substring(0, range.startOffset));
+      
+      if (match) {
+        const linkNode = document.createElement('a');
+        linkNode.href = `#`;
+        linkNode.dataset.noteLink = 'true';
+        linkNode.dataset.noteId = linkedNote.id;
+        linkNode.className = 'note-link';
+        linkNode.textContent = linkedNote.title;
+        linkNode.contentEditable = 'false';
+
+        const endNode = document.createTextNode('\u00A0');
+
+        range.setStart(node, match.index);
+        range.deleteContents();
+        range.insertNode(endNode);
+        range.insertNode(linkNode);
+
+        selection.collapse(endNode, 1);
+        handleContentBlur();
+      }
+    }
+  };
+
 
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
   const isLocked = note.password !== null;
@@ -781,6 +855,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
               contentEditable={true}
               onInput={handleContentChange}
               onBlur={handleContentBlur}
+              onClick={handleEditorClick}
               dangerouslySetInnerHTML={{ __html: note.content }}
               data-placeholder="Start writing..."
               className="h-full w-full outline-none text-base empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground"
@@ -852,6 +927,16 @@ export function NoteEditor({ note }: NoteEditorProps) {
         className="hidden"
         accept="image/*"
       />
+      
+      {linkPopoverOpen && (
+        <LinkPopover 
+            position={linkPopoverPosition}
+            query={linkQuery}
+            notes={notes.filter(n => n.id !== note.id)}
+            onSelect={handleSelectLink}
+            onClose={() => setLinkPopoverOpen(false)}
+        />
+      )}
 
       <PasswordDialog
         open={isPasswordDialogOpen}
