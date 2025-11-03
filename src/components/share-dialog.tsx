@@ -51,8 +51,9 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
         setIsSearching(true);
         setSearchResults([]);
 
-        const searchField = searchTerm.startsWith('@') ? 'username' : 'name';
-        const searchValue = searchTerm.startsWith('@') ? searchTerm : searchTerm.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+        const isUsernameSearch = searchTerm.startsWith('@');
+        const searchField = isUsernameSearch ? 'username' : 'name';
+        const searchValue = searchTerm;
 
         const usersRef = collection(firestore, "users");
         const q = query(
