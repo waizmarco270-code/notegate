@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Languages, Loader2, Replace, Star } from "lucide-react";
+import { Languages, Loader2, Replace, Star, Columns } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -183,4 +183,5 @@ export function TranslateDialog({ open, onOpenChange, noteContent, onReplaceCont
   );
 }
 
+    
     

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette, CaseSensitive, Heading, Pilcrow, Image, Text, CaseUpper, CaseLower, Type } from "lucide-react";
+import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette, CaseSensitive, Heading, Pilcrow, Image, Text, CaseUpper, CaseLower, Type, Columns, PanelRightClose } from "lucide-react";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -28,6 +28,8 @@ interface EditorToolbarProps {
   onConvertCase: (caseType: 'upper' | 'lower' | 'title' | 'sentence') => void;
   applyToAll: boolean;
   onApplyToAllChange: (value: boolean) => void;
+  isBilingualMode: boolean;
+  onToggleBilingualMode: () => void;
 }
 
 const colors = [
@@ -35,7 +37,15 @@ const colors = [
     "#FFA500", "#800080", "#008000", "#FFC0CB", "#A52A2A", "#808080", "#FFFFFF"
 ];
 
-export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, currentColor, onColorChange, onInsertUnorderedList, onInsertOrderedList, onInsertImage, onFormat, onConvertCase, applyToAll, onApplyToAllChange }: EditorToolbarProps) {
+export function EditorToolbar({ 
+    fontSize, onFontSizeChange, 
+    fontFamily, onFontFamilyChange, 
+    currentColor, onColorChange, 
+    onInsertUnorderedList, onInsertOrderedList, onInsertImage, 
+    onFormat, onConvertCase, 
+    applyToAll, onApplyToAllChange,
+    isBilingualMode, onToggleBilingualMode
+}: EditorToolbarProps) {
   const numericFontSize = parseInt(fontSize.replace('px', ''), 10);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   
@@ -210,7 +220,15 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
             </div>
         </PopoverContent>
        </Popover>
+
+      <Separator orientation="vertical" className="h-6 mx-1" />
+
+       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onToggleBilingualMode}>
+        {isBilingualMode ? <PanelRightClose className="h-4 w-4" /> : <Columns className="h-4 w-4" />}
+      </Button>
+
        <Separator orientation="vertical" className="h-6 mx-1" />
+
         <div className="flex items-center space-x-2">
             <Switch id="apply-to-all" checked={applyToAll} onCheckedChange={onApplyToAllChange} />
             <Label htmlFor="apply-to-all" className="text-xs">Apply to all</Label>

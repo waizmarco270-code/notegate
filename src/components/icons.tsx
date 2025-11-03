@@ -38,3 +38,40 @@ export const Share = ({ className, ...props }: React.SVGProps<SVGSVGElement>) =>
         <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
     </svg>
 )
+
+export const Columns = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={cn("lucide lucide-columns", className)}
+        {...props}
+    >
+        <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+        <line x1="12" x2="12" y1="3" y2="21" />
+    </svg>
+)
+
+export const PanelRightClose = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
+     <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={cn("lucide lucide-panel-right-close", className)}
+        {...props}
+    >
+        <rect width="18" height="18" x="3" y="3" rx="2" />
+        <path d="M15 3v18" />
+        <path d="m8 9 3 3-3 3" />
+    </svg>
+)
+
+    

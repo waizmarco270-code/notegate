@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus, Ear, Languages } from "lucide-react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus, Ear, Languages, Replace, Loader2, PanelRightClose } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { summarizeNoteAction, generateTagsAction, textToSpeechAction } from "@/lib/actions";
+import { summarizeNoteAction, generateTagsAction, textToSpeechAction, translateNoteAction } from "@/lib/actions";
 import { SummaryDialog } from "./summary-dialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { CategoryPopover } from "./category-popover";
@@ -34,10 +34,18 @@ import { ShareDialog } from "./share-dialog";
 import { NoteHistoryDialog } from "./note-history-dialog";
 import { AudioPlayerDialog } from "./audio-player-dialog";
 import { TranslateDialog } from "./translate-dialog";
+import { debounce } from "lodash";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { ScrollArea } from "./ui/scroll-area";
+import { Separator } from "./ui/separator";
 
 interface NoteEditorProps {
   note: Note;
 }
+
+const supportedLanguages = [
+  { name: "English", premium: false }, { name: "Spanish", premium: false }, { name: "French", premium: false }, { name: "German", premium: false }, { name: "Hindi", premium: false }, { name: "Hinglish", premium: true }, { name: "Arabic", premium: false }, { name: "Mandarin Chinese", premium: false }, { name: "Japanese", premium: false }, { name: "Russian", premium: false }, { name: "Portuguese", premium: false },
+];
 
 export function NoteEditor({ note }: NoteEditorProps) {
   const { updateNote, deleteNote } = useNotes();
@@ -67,6 +75,11 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [audioSrc, setAudioSrc] = useState<string | null>(null);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
 
+  // States for Bilingual Mode
+  const [isBilingualMode, setIsBilingualMode] = useState(false);
+  const [bilingualTargetLanguage, setBilingualTargetLanguage] = useState("Hinglish");
+  const [bilingualTranslatedContent, setBilingualTranslatedContent] = useState("");
+  const [isBilingualTranslating, setIsBilingualTranslating] = useState(false);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -88,6 +101,37 @@ export function NoteEditor({ note }: NoteEditorProps) {
       contentRef.current.innerHTML = note.content || "";
     }
   }, [note]);
+
+  const debouncedTranslate = useMemo(
+    () =>
+      debounce(async (content: string, language: string) => {
+        if (!content || !language || !isBilingualMode) {
+            setIsBilingualTranslating(false);
+            return;
+        }
+        setIsBilingualTranslating(true);
+        const result = await translateNoteAction({ noteContent: content, targetLanguage: language });
+        setIsBilingualTranslating(false);
+        if (result.translatedContent) {
+            setBilingualTranslatedContent(result.translatedContent);
+        } else {
+            setBilingualTranslatedContent(`<p class="text-destructive">${result.error || "Translation failed."}</p>`);
+        }
+      }, 1000), 
+    [isBilingualMode]
+  );
+  
+  const handleContentChange = () => {
+    const currentContent = contentRef.current?.innerHTML || "";
+    if (currentContent !== note.content) {
+      updateNote({ id: note.id, content: currentContent });
+    }
+    if (isBilingualMode) {
+        setIsBilingualTranslating(true);
+        debouncedTranslate(contentRef.current?.innerHTML || '', bilingualTargetLanguage);
+    }
+  };
+
 
   const handlePasswordSet = (password: string | null) => {
     updateNote({ id: note.id, password });
@@ -177,7 +221,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const applyStyleToAll = (style: Partial<CSSStyleDeclaration>) => {
     if (contentRef.current) {
       Object.assign(contentRef.current.style, style);
-      handleContentBlur();
+      handleContentChange();
     }
   };
 
@@ -197,12 +241,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   };
   
   const handleContentBlur = () => {
-    if (contentRef.current) {
-      const currentContent = contentRef.current.innerHTML;
-      if (currentContent !== note.content) {
-        updateNote({ id: note.id, content: currentContent });
-      }
-    }
+    handleContentChange();
   };
 
   const handleColorChange = (color: string) => {
@@ -214,7 +253,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
     if(contentRef.current) {
       contentRef.current.focus();
       document.execCommand(type, false, undefined);
-      handleContentBlur();
+      handleContentChange();
     }
   };
 
@@ -229,7 +268,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         const selection = window.getSelection();
         selection?.collapseToEnd();
       }
-      handleContentBlur();
+      handleContentChange();
     }
   };
   
@@ -274,7 +313,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         range.deleteContents();
         range.insertNode(document.createTextNode(convertedText));
     }
-    handleContentBlur();
+    handleContentChange();
   };
 
   const handleInsertImage = () => {
@@ -319,7 +358,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         if (contentRef.current) {
           contentRef.current.focus();
           document.execCommand("insertHTML", false, imgTag);
-          handleContentBlur();
+          handleContentChange();
         }
       };
     };
@@ -410,6 +449,32 @@ export function NoteEditor({ note }: NoteEditorProps) {
         toast({ title: "Note content has been replaced with the translation." });
     }
   };
+
+  const handleToggleBilingualMode = () => {
+    const nextState = !isBilingualMode;
+    setIsBilingualMode(nextState);
+    if (nextState && contentRef.current?.innerHTML) {
+      // Trigger translation when mode is enabled
+      setIsBilingualTranslating(true);
+      debouncedTranslate(contentRef.current.innerHTML, bilingualTargetLanguage);
+    } else {
+      // Clear content when disabled
+      setBilingualTranslatedContent("");
+    }
+  };
+  
+  const handleApplyBilingualTranslation = () => {
+    if (bilingualTranslatedContent) {
+      handleReplaceContent(bilingualTranslatedContent);
+    }
+  };
+  
+  useEffect(() => {
+    if (isBilingualMode && contentRef.current?.innerHTML) {
+        setIsBilingualTranslating(true);
+        debouncedTranslate(contentRef.current.innerHTML, bilingualTargetLanguage);
+    }
+  }, [bilingualTargetLanguage, isBilingualMode, debouncedTranslate]);
 
 
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
@@ -590,18 +655,79 @@ export function NoteEditor({ note }: NoteEditorProps) {
         onConvertCase={handleConvertCase}
         applyToAll={applyToAll}
         onApplyToAllChange={setApplyToAll}
+        isBilingualMode={isBilingualMode}
+        onToggleBilingualMode={handleToggleBilingualMode}
       />
       
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
-          <div
-            ref={contentRef}
-            contentEditable={true}
-            onBlur={handleContentBlur}
-            dangerouslySetInnerHTML={{ __html: note.content }}
-            data-placeholder="Start writing..."
-            className="h-full w-full outline-none text-base empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground"
-            style={{ fontSize, fontFamily }}
-          />
+      <div className={cn("flex-1 overflow-hidden flex", isBilingualMode ? "flex-row" : "flex-col")}>
+        <div className={cn("overflow-auto p-4 sm:p-6", isBilingualMode ? "w-1/2" : "w-full h-full")}>
+            <div
+              ref={contentRef}
+              contentEditable={true}
+              onBlur={handleContentBlur}
+              onInput={handleContentChange}
+              dangerouslySetInnerHTML={{ __html: note.content }}
+              data-placeholder="Start writing..."
+              className="h-full w-full outline-none text-base empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground"
+              style={{ fontSize, fontFamily }}
+            />
+        </div>
+         {isBilingualMode && (
+          <>
+            <Separator orientation="vertical" />
+            <div className="w-1/2 flex flex-col p-2 bg-secondary/30">
+                <div className="flex items-center justify-between p-2">
+                    <div className="flex items-center gap-2">
+                         <p className="text-sm font-medium">Translate to:</p>
+                        <Select value={bilingualTargetLanguage} onValueChange={setBilingualTargetLanguage}>
+                            <SelectTrigger className="w-auto h-8 text-xs">
+                                <SelectValue placeholder="Select language" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {supportedLanguages.map(lang => (
+                                <SelectItem key={lang.name} value={lang.name}>
+                                    <div className="flex items-center gap-2">
+                                    {lang.name}
+                                    {lang.premium && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />}
+                                    </div>
+                                </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button size="sm" disabled={!bilingualTranslatedContent || isBilingualTranslating}>
+                                <Replace className="mr-2 h-4 w-4" />
+                                Apply
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will replace your original note content with the translation. The original version will be saved in your note's history.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleApplyBilingualTranslation}>Replace</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+                 <ScrollArea className="flex-1 rounded-md border bg-background p-4 sm:p-6 m-2 mt-0">
+                    {isBilingualTranslating ? (
+                        <div className="flex items-center justify-center h-full">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        </div>
+                    ) : (
+                        <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: bilingualTranslatedContent || `<p class="text-muted-foreground">Translation will appear here.</p>` }} />
+                    )}
+                </ScrollArea>
+            </div>
+          </>
+        )}
       </div>
       
       <input
@@ -659,4 +785,5 @@ export function NoteEditor({ note }: NoteEditorProps) {
   );
 }
 
+    
     
