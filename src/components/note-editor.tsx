@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2 } from "lucide-react";
+import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ import { CategoryPopover } from "./category-popover";
 import { Badge } from "./ui/badge";
 import { useUser } from "@/firebase";
 import { ShareDialog } from "./share-dialog";
+import { NoteHistoryDialog } from "./note-history-dialog";
 
 interface NoteEditorProps {
   note: Note;
@@ -44,6 +45,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isCategoriesDialogOpen, setCategoriesDialogOpen] = useState(false);
   const [isShareDialogOpen, setShareDialogOpen] = useState(false);
+  const [isHistoryDialogOpen, setHistoryDialogOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(note.isFavorite ?? false);
   const contentRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -419,6 +421,10 @@ export function NoteEditor({ note }: NoteEditorProps) {
                           <span>Share</span>
                       </DropdownMenuItem>
                     )}
+                    <DropdownMenuItem onSelect={() => setHistoryDialogOpen(true)}>
+                        <History className="mr-2 h-4 w-4" />
+                        <span>View History</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={handleCopyNote}>
                         <Copy className="mr-2 h-4 w-4" />
                         <span>Copy Note</span>
@@ -574,6 +580,11 @@ export function NoteEditor({ note }: NoteEditorProps) {
         open={isSummaryDialogOpen}
         onOpenChange={setSummaryDialogOpen}
         summary={summary}
+      />
+       <NoteHistoryDialog
+        open={isHistoryDialogOpen}
+        onOpenChange={setHistoryDialogOpen}
+        note={note}
       />
       {user && (
         <ShareDialog 

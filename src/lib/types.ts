@@ -1,4 +1,10 @@
 
+export type NoteVersion = {
+  title: string;
+  content: string;
+  updatedAt: string;
+};
+
 export type Note = {
   id: string;
   title: string;
@@ -9,6 +15,7 @@ export type Note = {
   updatedAt: string;
   password: string | null;
   isFavorite?: boolean;
+  history?: NoteVersion[];
 };
 
 export type UserProfile = {

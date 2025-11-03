@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 function getStorageValue<T>(key: string, initialValue: T): T {
   if (typeof window === "undefined") {
@@ -28,9 +28,9 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T)
     }
   }, [key, storedValue]);
   
-  const setValue = (value: T) => {
+  const setValue = useCallback((value: T) => {
     setStoredValue(value);
-  }
+  }, [setStoredValue]);
 
   return [storedValue, setValue];
 }

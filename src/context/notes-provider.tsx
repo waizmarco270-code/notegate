@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useMemo, useEffect } from "react";
-import type { Note } from "@/lib/types";
+import type { Note, NoteVersion } from "@/lib/types";
 import { initialNotes } from "@/lib/data";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 
@@ -20,11 +20,14 @@ interface NotesContextType {
   userCategories: string[];
   importData: (data: { notes: Note[]; categories: string[] }) => void;
   importSharedNote: (note: Note) => void;
+  restoreNoteVersion: (noteId: string, version: NoteVersion) => void;
 }
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
 
 export const PREDEFINED_CATEGORIES = ["Personal", "Work", "Ideas"];
+const MAX_HISTORY_LENGTH = 10;
+
 
 export function NotesProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes] = useLocalStorage<Note[]>("notes", initialNotes);
@@ -54,18 +57,43 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       updatedAt: new Date().toISOString(),
       password: null,
       isFavorite: false,
+      history: [],
     };
     setNotes([newNote, ...notes]);
     setActiveNoteId(newNote.id);
   };
 
   const updateNote = (updatedFields: Partial<Note> & { id: string }) => {
-    setNotes(
-      notes.map((note) =>
-        note.id === updatedFields.id
-          ? { ...note, ...updatedFields, updatedAt: new Date().toISOString() }
-          : note
-      )
+    setNotes(currentNotes =>
+      currentNotes.map(note => {
+        if (note.id === updatedFields.id) {
+          const originalNote = { ...note };
+  
+          // Create a history entry only if title or content is changing
+          const shouldCreateHistory = 
+            (updatedFields.title && updatedFields.title !== originalNote.title) ||
+            (updatedFields.content && updatedFields.content !== originalNote.content);
+
+          let newHistory = originalNote.history || [];
+
+          if (shouldCreateHistory) {
+             const historyEntry: NoteVersion = {
+              title: originalNote.title,
+              content: originalNote.content,
+              updatedAt: originalNote.updatedAt,
+            };
+            newHistory = [historyEntry, ...newHistory].slice(0, MAX_HISTORY_LENGTH);
+          }
+  
+          return {
+            ...originalNote,
+            ...updatedFields,
+            updatedAt: new Date().toISOString(),
+            history: newHistory,
+          };
+        }
+        return note;
+      })
     );
   };
 
@@ -96,9 +124,17 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       ));
     }
   };
+  
+  const restoreNoteVersion = (noteId: string, version: NoteVersion) => {
+    updateNote({
+      id: noteId,
+      title: version.title,
+      content: version.content
+    });
+  };
 
   const importData = (data: { notes: Note[]; categories: string[] }) => {
-    setNotes(data.notes);
+    setNotes(data.notes.map(n => ({ ...n, history: n.history || [] })));
     setUserCategories(data.categories);
     // After importing, set active note to the most recently updated one
     if (data.notes.length > 0) {
@@ -121,6 +157,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
             // Ensure dates are in ISO format
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            history: [],
         };
         setNotes([newNote, ...notes]);
         setActiveNoteId(newNote.id);
@@ -132,7 +169,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
 
   const allCategories = useMemo(() => [...new Set([...PREDEFINED_CATEGORIES, ...userCategories])], [userCategories]);
-  const allTags = useMemo(() => [...new Set(notes.flatMap(note => note.tags))], [notes]);
+  const allTags = useMemo(() => [...new Set(notes.flatMap(note => note.tags || []))], [notes]);
   
   const value = {
     notes,
@@ -148,7 +185,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     deleteCategory,
     userCategories,
     importData,
-    importSharedNote
+    importSharedNote,
+    restoreNoteVersion,
   };
 
   return (
