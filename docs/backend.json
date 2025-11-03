@@ -1,0 +1,115 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile information.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID from Firebase Authentication."
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's full name."
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's unique username, prefixed with @."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        }
+      },
+      "required": ["uid", "name", "username", "email"]
+    },
+    "Note": {
+      "title": "Note",
+      "description": "Represents a single note created by a user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who owns the note."
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "isFavorite": {
+          "type": "boolean"
+        }
+      },
+      "required": ["userId", "title", "createdAt", "updatedAt"]
+    },
+    "SharedNote": {
+      "title": "Shared Note",
+      "description": "Represents a request to share a note between users.",
+      "type": "object",
+      "properties": {
+        "fromUserId": {
+          "type": "string"
+        },
+        "toUserId": {
+          "type": "string"
+        },
+        "noteId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "accepted", "rejected"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["fromUserId", "toUserId", "noteId", "status", "createdAt"]
+    }
+  },
+  "auth": {
+    "providers": ["email"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Stores public profile information for each user."
+    },
+    "/users/{userId}/notes/{noteId}": {
+      "schema": {
+        "$ref": "#/entities/Note"
+      },
+      "description": "Stores notes for each user."
+    },
+    "/users/{userId}/inbox/{shareId}": {
+      "schema": {
+        "$ref": "#/entities/SharedNote"
+      },
+      "description": "Stores incoming note share requests for each user."
+    }
+  }
+}

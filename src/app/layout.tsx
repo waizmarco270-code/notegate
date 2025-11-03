@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './providers';
 import { Analytics } from '@vercel/analytics/react';
+import { FirebaseProvider } from '@/firebase/provider';
 
 export const metadata: Metadata = {
   title: 'NotesGate',
@@ -21,7 +22,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#000000" />
       </head>
       <body className="antialiased">
-        <Providers>{children}</Providers>
+        <FirebaseProvider>
+          <Providers>{children}</Providers>
+        </FirebaseProvider>
         <Analytics />
       </body>
     </html>
