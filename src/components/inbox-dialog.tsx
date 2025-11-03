@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore, useUser, useCollection } from "@/firebase";
+import { useFirestore, useUser, useCollection, useDoc } from "@/firebase";
 import { collection, query, where, doc, deleteDoc } from "firebase/firestore";
 import type { SharedNote, UserProfile } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -31,24 +31,22 @@ function ShareRequestCard({ request }: { request: SharedNote & { id: string } })
     const { importSharedNote } = useNotes();
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // Data is now embedded in the request, no need for extra fetches for the note itself.
     const fromUserRef = useMemo(() => {
         if (!firestore || !request.fromUserId) return null;
         return doc(firestore, "users", request.fromUserId);
     }, [firestore, request.fromUserId]);
+    
     const { data: fromUser, loading: fromUserLoading } = useDoc<UserProfile>(fromUserRef);
 
     const handleAccept = async () => {
         if (!firestore || !user || !request.noteData) return;
         setIsProcessing(true);
         try {
-            // The full note object is embedded in the request.noteData
             await importSharedNote({
                 ...request.noteData,
                 id: request.noteId, 
             });
             
-            // After successful import, delete the share request from the user's inbox
             const shareRef = doc(firestore, `users/${user.uid}/inbox/${request.id}`);
             await deleteDoc(shareRef);
 
@@ -86,7 +84,6 @@ function ShareRequestCard({ request }: { request: SharedNote & { id: string } })
         return <div className="p-4 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></div>
     }
 
-    // If the sender's user data or the embedded note data is missing, don't show.
     if (!fromUser || !request.noteData) {
         return null;
     }
