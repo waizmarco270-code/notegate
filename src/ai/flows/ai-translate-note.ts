@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -13,7 +14,7 @@ import {z} from 'genkit';
 
 const TranslateNoteInputSchema = z.object({
   noteContent: z.string().describe('The HTML content of the note to translate.'),
-  targetLanguage: z.string().describe('The language to translate the note content into (e.g., "Spanish", "Hindi").'),
+  targetLanguage: z.string().describe('The language to translate the note content into (e.g., "Spanish", "Hindi", "Hinglish").'),
 });
 export type TranslateNoteInput = z.infer<typeof TranslateNoteInputSchema>;
 
@@ -37,6 +38,7 @@ IMPORTANT:
 - Only translate the text content within the HTML tags.
 - Do not add or remove any HTML tags.
 - For <img> tags, do not translate the 'src' attribute.
+- If the targetLanguage is "Hinglish", you must translate it to the Hindi language but write it using the Roman (English) alphabet. For example, "What is your name?" becomes "Aapka naam kya hai?".
 - Your final output must be a valid HTML string.
 
 HTML Content to Translate:

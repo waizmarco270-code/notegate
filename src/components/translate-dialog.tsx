@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Languages, Loader2, Replace } from "lucide-react";
+import { Languages, Loader2, Replace, Star } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -42,11 +42,22 @@ interface TranslateDialogProps {
 }
 
 const supportedLanguages = [
-  "English", "Spanish", "French", "German", "Hindi", "Arabic", "Mandarin Chinese", "Japanese", "Russian", "Portuguese"
+  { name: "English", premium: false },
+  { name: "Spanish", premium: false },
+  { name: "French", premium: false },
+  { name: "German", premium: false },
+  { name: "Hindi", premium: false },
+  { name: "Hinglish", premium: true },
+  { name: "Arabic", premium: false },
+  { name: "Mandarin Chinese", premium: false },
+  { name: "Japanese", premium: false },
+  { name: "Russian", premium: false },
+  { name: "Portuguese", premium: false },
 ];
 
+
 export function TranslateDialog({ open, onOpenChange, noteContent, onReplaceContent }: TranslateDialogProps) {
-  const [targetLanguage, setTargetLanguage] = useState("Hindi");
+  const [targetLanguage, setTargetLanguage] = useState("Hinglish");
   const [translatedContent, setTranslatedContent] = useState("");
   const [isTranslating, setIsTranslating] = useState(false);
   const { toast } = useToast();
@@ -107,7 +118,12 @@ export function TranslateDialog({ open, onOpenChange, noteContent, onReplaceCont
               </SelectTrigger>
               <SelectContent>
                 {supportedLanguages.map(lang => (
-                  <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                  <SelectItem key={lang.name} value={lang.name}>
+                    <div className="flex items-center gap-2">
+                      {lang.name}
+                      {lang.premium && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />}
+                    </div>
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
