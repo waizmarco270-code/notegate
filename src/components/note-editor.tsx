@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus, Ear } from "lucide-react";
+import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus, Ear, Languages } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ import { useUser } from "@/firebase";
 import { ShareDialog } from "./share-dialog";
 import { NoteHistoryDialog } from "./note-history-dialog";
 import { AudioPlayerDialog } from "./audio-player-dialog";
+import { TranslateDialog } from "./translate-dialog";
 
 interface NoteEditorProps {
   note: Note;
@@ -47,6 +48,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [isCategoriesDialogOpen, setCategoriesDialogOpen] = useState(false);
   const [isShareDialogOpen, setShareDialogOpen] = useState(false);
   const [isHistoryDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [isTranslateDialogOpen, setTranslateDialogOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(note.isFavorite ?? false);
   const contentRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -442,6 +444,10 @@ export function NoteEditor({ note }: NoteEditorProps) {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => setTranslateDialogOpen(true)}>
+                        <Languages className="mr-2 h-4 w-4" />
+                        <span>Translate</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={handleListenToNote} disabled={isGeneratingAudio}>
                         <Ear className="mr-2 h-4 w-4" />
                         <span>{isGeneratingAudio ? "Generating..." : "Listen to Note"}</span>
@@ -620,6 +626,11 @@ export function NoteEditor({ note }: NoteEditorProps) {
         open={isHistoryDialogOpen}
         onOpenChange={setHistoryDialogOpen}
         note={note}
+      />
+       <TranslateDialog
+        open={isTranslateDialogOpen}
+        onOpenChange={setTranslateDialogOpen}
+        noteContent={note.content || ""}
       />
       {user && (
         <ShareDialog 

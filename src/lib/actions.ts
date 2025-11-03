@@ -3,6 +3,7 @@
 import { summarizeNote, SummarizeNoteInput } from "@/ai/flows/ai-summarize-note";
 import { generateTags, GenerateTagsInput } from "@/ai/flows/ai-generate-tags";
 import { textToSpeech, TextToSpeechInput } from "@/ai/flows/ai-text-to-speech";
+import { translateNote, TranslateNoteInput } from "@/ai/flows/ai-translate-note";
 import { z } from "zod";
 
 const summarizeSchema = z.object({
@@ -59,5 +60,25 @@ export async function textToSpeechAction(input: TextToSpeechInput) {
     } catch (e) {
         console.error(e);
         return { error: "Failed to generate audio. Please try again." };
+    }
+}
+
+const translateNoteSchema = z.object({
+  noteContent: z.string(),
+  targetLanguage: z.string(),
+});
+
+export async function translateNoteAction(input: TranslateNoteInput) {
+    const parsedInput = translateNoteSchema.safeParse(input);
+    if (!parsedInput.success) {
+        return { error: "Invalid input" };
+    }
+
+    try {
+        const result = await translateNote(parsedInput.data);
+        return { translatedContent: result.translatedContent };
+    } catch (e) {
+        console.error(e);
+        return { error: "Failed to translate note. Please try again." };
     }
 }
