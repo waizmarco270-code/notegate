@@ -2,14 +2,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag } from "lucide-react";
+import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2 } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EditorToolbar } from "@/components/editor-toolbar";
 import { PasswordDialog } from "@/components/password-dialog";
-import { ManageCategoriesDialog } from "@/components/manage-categories-dialog";
+import { ManageCategoriesDialog } from "./manage-categories-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +29,8 @@ import { SummaryDialog } from "./summary-dialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { CategoryPopover } from "./category-popover";
 import { Badge } from "./ui/badge";
+import { useUser } from "@/firebase";
+import { ShareDialog } from "./share-dialog";
 
 interface NoteEditorProps {
   note: Note;
@@ -37,9 +39,11 @@ interface NoteEditorProps {
 export function NoteEditor({ note }: NoteEditorProps) {
   const { updateNote, deleteNote } = useNotes();
   const { toast } = useToast();
+  const { user } = useUser();
   const [title, setTitle] = useState(note.title);
   const [isPasswordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [isCategoriesDialogOpen, setCategoriesDialogOpen] = useState(false);
+  const [isShareDialogOpen, setShareDialogOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(note.isFavorite ?? false);
   const contentRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -252,12 +256,11 @@ export function NoteEditor({ note }: NoteEditorProps) {
 
     if (isFullContent) {
         contentRef.current.innerText = convertedText;
-        handleContentBlur();
     } else if (selection && range) {
         range.deleteContents();
         range.insertNode(document.createTextNode(convertedText));
-        handleContentBlur();
     }
+    handleContentBlur();
   };
 
   const handleInsertImage = () => {
@@ -328,6 +331,12 @@ export function NoteEditor({ note }: NoteEditorProps) {
            <div className="absolute bottom-0 left-0 h-0.5 w-full bg-transparent group-focus-within:bg-gradient-to-r from-transparent via-primary to-transparent group-focus-within:animate-underline-grow" />
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
+            {user && (
+              <Button onClick={() => setShareDialogOpen(true)} variant="ghost" size="sm" className="hidden sm:inline-flex">
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
+            )}
             <Button onClick={handleSummarize} disabled={isSummarizing} variant="ghost" size="sm" className="hidden sm:inline-flex">
               <Sparkles className="h-4 w-4 mr-2" />
               {isSummarizing ? "Summarizing..." : "Summarize"}
@@ -350,6 +359,12 @@ export function NoteEditor({ note }: NoteEditorProps) {
                         <Sparkles className="mr-2 h-4 w-4" />
                         <span>{isSummarizing ? "Summarizing..." : "Summarize"}</span>
                     </DropdownMenuItem>
+                    {user && (
+                      <DropdownMenuItem onSelect={() => setShareDialogOpen(true)} className="sm:hidden">
+                          <Share2 className="mr-2 h-4 w-4" />
+                          <span>Share</span>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onSelect={handleCopyNote}>
                         <Copy className="mr-2 h-4 w-4" />
                         <span>Copy Note</span>
@@ -470,8 +485,14 @@ export function NoteEditor({ note }: NoteEditorProps) {
         onOpenChange={setSummaryDialogOpen}
         summary={summary}
       />
+      {user && (
+        <ShareDialog 
+          open={isShareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          noteId={note.id}
+          currentUserId={user.uid}
+        />
+      )}
     </div>
   );
 }
-
-    

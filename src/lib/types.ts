@@ -1,3 +1,4 @@
+
 export type Note = {
   id: string;
   title: string;
@@ -9,3 +10,12 @@ export type Note = {
   password: string | null;
   isFavorite?: boolean;
 };
+
+export type UserProfile = {
+  id: string;
+  uid: string;
+  name: string;
+  username: string;
+  email: string;
+  photoURL?: string;
+}
