@@ -3,7 +3,8 @@
 import { summarizeNote, SummarizeNoteInput } from "@/ai/flows/ai-summarize-note";
 import { generateTags, GenerateTagsInput } from "@/ai/flows/ai-generate-tags";
 import { textToSpeech, TextToSpeechInput } from "@/ai/flows/ai-text-to-speech";
-import { translateNote, TranslateNoteInput, TranslateNoteOutput } from "@/ai/flows/ai-translate-note";
+import { translateNote, type TranslateNoteInput, type TranslateNoteOutput } from "@/ai/flows/ai-translate-note";
+import { writingAssistant } from "@/ai/flows/ai-writing-assistant";
 import { z } from "zod";
 
 const summarizeSchema = z.object({
@@ -80,5 +81,32 @@ export async function translateNoteAction(input: TranslateNoteInput): Promise<Pa
     } catch (e) {
         console.error(e);
         return { error: "Failed to translate note. Please try again." };
+    }
+}
+
+
+const WritingAssistantInputSchema = z.object({
+  selectedText: z.string().describe('The text selected by the user.'),
+  command: z.string().describe('The writing command to execute (e.g., "Improve Writing", "Make Shorter", "Change Tone to Formal").'),
+});
+type WritingAssistantInput = z.infer<typeof WritingAssistantInputSchema>;
+
+const WritingAssistantOutputSchema = z.object({
+  generatedContent: z.string().describe('The AI-generated content based on the command.'),
+});
+
+
+export async function writingAssistantAction(input: WritingAssistantInput): Promise<Partial<z.infer<typeof WritingAssistantOutputSchema>> & { error?: string }> {
+    const parsedInput = WritingAssistantInputSchema.safeParse(input);
+    if (!parsedInput.success) {
+        return { error: "Invalid input" };
+    }
+
+    try {
+        const result = await writingAssistant(parsedInput.data);
+        return result;
+    } catch (e) {
+        console.error(e);
+        return { error: "Failed to process writing command. Please try again." };
     }
 }

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus, Ear, Languages, Replace, Loader2, PanelRightClose, X, Users } from "lucide-react";
+import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus, Ear, Languages, Replace, Loader2, PanelRightClose, X, Users, Wand2 } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -21,10 +21,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "./ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { summarizeNoteAction, generateTagsAction, textToSpeechAction, translateNoteAction } from "@/lib/actions";
+import { summarizeNoteAction, generateTagsAction, textToSpeechAction, translateNoteAction, writingAssistantAction } from "@/lib/actions";
 import { SummaryDialog } from "./summary-dialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { CategoryPopover } from "./category-popover";
@@ -87,6 +87,12 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [selectionPopoverOpen, setSelectionPopoverOpen] = useState(false);
   const [selectionRange, setSelectionRange] = useState<Range | null>(null);
 
+  // AI Writing Assistant states
+  const [isAiWriting, setIsAiWriting] = useState(false);
+  const [aiGeneratedContent, setAiGeneratedContent] = useState("");
+  const [isAiResultDialogOpen, setAiResultDialogOpen] = useState(false);
+  const [aiActionTitle, setAiActionTitle] = useState("");
+
   useEffect(() => {
     const handler = setTimeout(() => {
       if (title !== note.title) {
@@ -109,7 +115,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   }, [note]);
   
   useEffect(() => {
-    const handleMouseUp = () => {
+    const handler = () => {
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
             const range = selection.getRangeAt(0);
@@ -124,20 +130,10 @@ export function NoteEditor({ note }: NoteEditorProps) {
         }
     };
     
-    const editorDiv = contentRef.current;
-    editorDiv?.addEventListener('mouseup', handleMouseUp);
-    
-    // Hide popover on scroll or click outside
-    const handleClickOutside = (event: MouseEvent) => {
-        if (contentRef.current && !contentRef.current.contains(event.target as Node)) {
-            setSelectionPopoverOpen(false);
-        }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('selectionchange', handler);
 
     return () => {
-        editorDiv?.removeEventListener('mouseup', handleMouseUp);
-        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('selectionchange', handler);
     };
   }, []);
 
@@ -161,8 +157,8 @@ export function NoteEditor({ note }: NoteEditorProps) {
   );
   
   const handleContentChange = () => {
-    const currentContent = contentRef.current?.innerHTML || "";
     if (isBilingualMode) {
+        const currentContent = contentRef.current?.innerHTML || "";
         setIsBilingualTranslating(true);
         debouncedTranslate(currentContent, bilingualTargetLanguage);
     }
@@ -533,6 +529,14 @@ export function NoteEditor({ note }: NoteEditorProps) {
     }
     return note.content || "";
   }
+  
+  const getSelectedText = () => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+        return selection.toString();
+    }
+    return "";
+  }
 
   const handleShareOnWhatsApp = () => {
     const content = contentRef.current?.innerText || '';
@@ -544,6 +548,34 @@ export function NoteEditor({ note }: NoteEditorProps) {
     const url = `https://wa.me/?text=${whatsAppText}`;
     window.open(url, '_blank');
   };
+  
+  const handleAiWritingAction = async (command: string) => {
+    const selectedText = getSelectedText();
+    if (!selectedText) {
+      toast({ variant: "destructive", title: "Please select text first." });
+      return;
+    }
+    setIsAiWriting(true);
+    setAiActionTitle(command);
+    setAiResultDialogOpen(true);
+    setAiGeneratedContent("");
+    
+    const result = await writingAssistantAction({ selectedText, command });
+    setIsAiWriting(false);
+
+    if (result.generatedContent) {
+      setAiGeneratedContent(result.generatedContent);
+    } else {
+      setAiGeneratedContent(result.error || "Failed to generate content.");
+    }
+  };
+  
+  const handleReplaceWithAiContent = () => {
+    if (aiGeneratedContent) {
+      handleReplaceContent(aiGeneratedContent);
+    }
+    setAiResultDialogOpen(false);
+  }
 
 
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
@@ -758,14 +790,39 @@ export function NoteEditor({ note }: NoteEditorProps) {
       
       <Popover open={selectionPopoverOpen} onOpenChange={setSelectionPopoverOpen}>
           <PopoverTrigger asChild>
-            <div style={{
-                position: 'absolute',
-                top: `${selectionRange ? selectionRange.getBoundingClientRect().top - 40 : 0}px`,
-                left: `${selectionRange ? selectionRange.getBoundingClientRect().left + selectionRange.getBoundingClientRect().width / 2 : 0}px`,
+            <div className="absolute" style={{
+                top: `${selectionRange ? selectionRange.getBoundingClientRect().top - 45 : -100}px`,
+                left: `${selectionRange ? selectionRange.getBoundingClientRect().left + selectionRange.getBoundingClientRect().width / 2 : -100}px`,
                 transform: 'translateX(-50%)',
             }} />
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-1">
+          <PopoverContent className="w-auto p-1 flex gap-1">
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                        <Sparkles className="h-4 w-4 mr-2"/>
+                        AI Tools
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem onSelect={() => handleAiWritingAction("Improve Writing")}>Improve Writing</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handleAiWritingAction("Fix Spelling & Grammar")}>Fix Spelling & Grammar</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={() => handleAiWritingAction("Make Shorter")}>Make Shorter</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handleAiWritingAction("Make Longer")}>Make Longer</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                     <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>Change Tone</DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                            <DropdownMenuItem onSelect={() => handleAiWritingAction("Change Tone to Professional")}>Professional</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleAiWritingAction("Change Tone to Casual")}>Casual</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleAiWritingAction("Change Tone to Confident")}>Confident</DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                    </DropdownMenuSub>
+                </DropdownMenuContent>
+             </DropdownMenu>
              <Button variant="ghost" size="sm" onClick={() => setTranslateDialogOpen(true)}>
                 <Languages className="h-4 w-4 mr-2"/>
                 Translate
@@ -778,8 +835,8 @@ export function NoteEditor({ note }: NoteEditorProps) {
             <div
               ref={contentRef}
               contentEditable={true}
-              onBlur={handleContentBlur}
               onInput={handleContentChange}
+              onBlur={handleContentBlur}
               dangerouslySetInnerHTML={{ __html: note.content }}
               data-placeholder="Start writing..."
               className="h-full w-full outline-none text-base empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground"
@@ -896,8 +953,35 @@ export function NoteEditor({ note }: NoteEditorProps) {
         audioSrc={audioSrc}
         noteTitle={title}
       />
+      <AlertDialog open={isAiResultDialogOpen} onOpenChange={setAiResultDialogOpen}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+                <Wand2 className="h-5 w-5 text-primary"/>
+                AI Suggestion: {aiActionTitle}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Here's the content generated by AI. You can replace your selection with it.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <ScrollArea className="max-h-80 rounded-md border p-4 bg-muted/20">
+            {isAiWriting ? (
+                 <div className="flex items-center justify-center h-24">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : (
+                <p className="text-sm">{aiGeneratedContent}</p>
+            )}
+          </ScrollArea>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleReplaceWithAiContent} disabled={isAiWriting}>
+                <Replace className="mr-2 h-4 w-4"/>
+                Replace Selection
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
-
-    
