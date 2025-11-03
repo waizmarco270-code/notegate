@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus, Ear, Languages, Replace, Loader2, PanelRightClose, X } from "lucide-react";
+import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus, Ear, Languages, Replace, Loader2, PanelRightClose, X, Users } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { WhatsappLogo } from "./icons";
 
 interface NoteEditorProps {
   note: Note;
@@ -533,6 +534,17 @@ export function NoteEditor({ note }: NoteEditorProps) {
     return note.content || "";
   }
 
+  const handleShareOnWhatsApp = () => {
+    const content = contentRef.current?.innerText || '';
+    if (!content && !title) {
+        toast({ variant: "destructive", title: "Cannot share an empty note." });
+        return;
+    }
+    const whatsAppText = encodeURIComponent(`*${title}*\n\n${content}`);
+    const url = `https://wa.me/?text=${whatsAppText}`;
+    window.open(url, '_blank');
+  };
+
 
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
   const isLocked = note.password !== null;
@@ -551,10 +563,24 @@ export function NoteEditor({ note }: NoteEditorProps) {
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
             {user && (
-              <Button onClick={() => setShareDialogOpen(true)} variant="ghost" size="sm" className="hidden sm:inline-flex">
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => setShareDialogOpen(true)}>
+                        <Users className="mr-2 h-4 w-4" />
+                        <span>Share with NotesGate User</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={handleShareOnWhatsApp}>
+                         <WhatsappLogo className="mr-2 h-4 w-4" />
+                        <span>Share on WhatsApp</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             <Button onClick={handleSummarize} disabled={isSummarizing} variant="ghost" size="sm" className="hidden sm:inline-flex">
               <Sparkles className="h-4 w-4 mr-2" />
@@ -587,10 +613,24 @@ export function NoteEditor({ note }: NoteEditorProps) {
                         <span>{isSummarizing ? "Summarizing..." : "Summarize"}</span>
                     </DropdownMenuItem>
                     {user && (
-                      <DropdownMenuItem onSelect={() => setShareDialogOpen(true)} className="sm:hidden">
-                          <Share2 className="mr-2 h-4 w-4" />
-                          <span>Share</span>
-                      </DropdownMenuItem>
+                      <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                               <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="sm:hidden">
+                                  <Share2 className="mr-2 h-4 w-4" />
+                                  <span>Share</span>
+                              </DropdownMenuItem>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent side="left" align="start">
+                                <DropdownMenuItem onSelect={() => setShareDialogOpen(true)}>
+                                    <Users className="mr-2 h-4 w-4" />
+                                    <span>With NotesGate User</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={handleShareOnWhatsApp}>
+                                    <WhatsappLogo className="mr-2 h-4 w-4" />
+                                    <span>On WhatsApp</span>
+                                </DropdownMenuItem>
+                          </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
                     <DropdownMenuItem onSelect={() => setHistoryDialogOpen(true)}>
                         <History className="mr-2 h-4 w-4" />

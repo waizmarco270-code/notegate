@@ -19,7 +19,7 @@ export const SecureNoteLogo = ({ className, ...props }: React.SVGProps<SVGSVGEle
   </svg>
 )
 
-export const Share = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
+export const Users = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
     <svg 
         xmlns="http://www.w3.org/2000/svg" 
         viewBox="0 0 24 24" 
@@ -28,14 +28,13 @@ export const Share = ({ className, ...props }: React.SVGProps<SVGSVGElement>) =>
         strokeWidth="2" 
         strokeLinecap="round" 
         strokeLinejoin="round" 
-        className={cn("lucide lucide-share-2", className)}
+        className={cn("lucide lucide-users", className)}
         {...props}
     >
-        <circle cx="18" cy="5" r="3" />
-        <circle cx="6" cy="12" r="3" />
-        <circle cx="18" cy="19" r="3" />
-        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
 )
 
@@ -74,4 +73,15 @@ export const PanelRightClose = ({ className, ...props }: React.SVGProps<SVGSVGEl
     </svg>
 )
 
+export const WhatsappLogo = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
+    <svg 
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className={cn("", className)}
+        {...props}
+    >
+        <path d="M16.6 14c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.7-.8.9-.1.1-.3.1-.5 0-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5.1-.1.2-.3.4-.4.1-.1.2-.2.3-.3.1-.1.2-.2.1-.4-.1-.1-.6-1.5-.8-2.1-.2-.5-.4-.5-.5-.5h-.5c-.2 0-.5.2-.6.4-.2.2-.7.7-.7,1.6s.7,1.9.8,2c.1.1,1.5,2.3,3.6,3.2.5.2.8.3,1.1.4.5.1.9.1,1.2.1.4-.1.1-.6.7-1.2.1-.2.1-.5,0-.6m5.3-7.5c-1.3-1.3-3-2-4.9-2-3.9,0-7,3.1-7,7,0,1.3.3,2.5.9,3.6l-1,3.6,3.7-1c1.1.5,2.3.8,3.5.8,3.9,0,7-3.1,7-7,.1-1.9-.6-3.6-1.9-4.9m-4.9,10.5c-1.1,0-2.2-.3-3.1-.8l-.2-.1-2.3.6.6-2.2-.1-.2c-.6-1-1-2.1-1-3.3,0-3.3,2.7-6,6-6s6,2.7,6,6-2.6,6-5.9,6Z" />
+    </svg>
+)
     
