@@ -2,6 +2,7 @@
 
 import { summarizeNote, SummarizeNoteInput } from "@/ai/flows/ai-summarize-note";
 import { generateTags, GenerateTagsInput } from "@/ai/flows/ai-generate-tags";
+import { textToSpeech, TextToSpeechInput } from "@/ai/flows/ai-text-to-speech";
 import { z } from "zod";
 
 const summarizeSchema = z.object({
@@ -39,5 +40,24 @@ export async function generateTagsAction(input: GenerateTagsInput) {
     } catch (e) {
         console.error(e);
         return { error: "Failed to generate tags. Please try again." };
+    }
+}
+
+const textToSpeechSchema = z.object({
+  text: z.string(),
+});
+
+export async function textToSpeechAction(input: TextToSpeechInput) {
+    const parsedInput = textToSpeechSchema.safeParse(input);
+    if (!parsedInput.success) {
+        return { error: "Invalid input" };
+    }
+
+    try {
+        const result = await textToSpeech(parsedInput.data);
+        return { audio: result.audio };
+    } catch (e) {
+        console.error(e);
+        return { error: "Failed to generate audio. Please try again." };
     }
 }

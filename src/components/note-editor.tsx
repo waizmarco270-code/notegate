@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus } from "lucide-react";
+import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus, Ear } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { summarizeNoteAction, generateTagsAction } from "@/lib/actions";
+import { summarizeNoteAction, generateTagsAction, textToSpeechAction } from "@/lib/actions";
 import { SummaryDialog } from "./summary-dialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { CategoryPopover } from "./category-popover";
@@ -32,6 +32,7 @@ import { Badge } from "./ui/badge";
 import { useUser } from "@/firebase";
 import { ShareDialog } from "./share-dialog";
 import { NoteHistoryDialog } from "./note-history-dialog";
+import { AudioPlayerDialog } from "./audio-player-dialog";
 
 interface NoteEditorProps {
   note: Note;
@@ -60,6 +61,9 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [tagInput, setTagInput] = useState("");
   const [isGeneratingTags, setIsGeneratingTags] = useState(false);
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+  const [isAudioPlayerOpen, setAudioPlayerOpen] = useState(false);
+  const [audioSrc, setAudioSrc] = useState<string | null>(null);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
 
 
   useEffect(() => {
@@ -144,7 +148,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   };
 
   const handleSummarize = async () => {
-    const content = contentRef.current?.innerHTML || '';
+    const content = contentRef.current?.innerText || '';
     if (!content) {
       toast({
         variant: "destructive",
@@ -370,6 +374,33 @@ export function NoteEditor({ note }: NoteEditorProps) {
     updateNote({ id: note.id, tags: newTags });
   };
 
+  const handleListenToNote = async () => {
+    const content = contentRef.current?.innerText || '';
+     if (!content) {
+      toast({ variant: "destructive", title: "Cannot listen to an empty note." });
+      return;
+    }
+    setIsGeneratingAudio(true);
+    setAudioSrc(null);
+    setAudioPlayerOpen(true); // Open dialog to show loading state
+
+    toast({ title: "Generating audio...", description: "This might take a moment." });
+
+    const result = await textToSpeechAction({ text: content });
+    setIsGeneratingAudio(false);
+
+    if (result.audio) {
+      setAudioSrc(result.audio);
+    } else {
+      setAudioPlayerOpen(false);
+      toast({
+        variant: "destructive",
+        title: "Audio Generation Failed",
+        description: result.error || "Could not generate audio for this note.",
+      });
+    }
+  }
+
 
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
   const isLocked = note.password !== null;
@@ -411,6 +442,10 @@ export function NoteEditor({ note }: NoteEditorProps) {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={handleListenToNote} disabled={isGeneratingAudio}>
+                        <Ear className="mr-2 h-4 w-4" />
+                        <span>{isGeneratingAudio ? "Generating..." : "Listen to Note"}</span>
+                    </DropdownMenuItem>
                      <DropdownMenuItem onSelect={handleSummarize} disabled={isSummarizing} className="sm:hidden">
                         <Sparkles className="mr-2 h-4 w-4" />
                         <span>{isSummarizing ? "Summarizing..." : "Summarize"}</span>
@@ -594,6 +629,12 @@ export function NoteEditor({ note }: NoteEditorProps) {
           currentUserId={user.uid}
         />
       )}
+       <AudioPlayerDialog
+        open={isAudioPlayerOpen}
+        onOpenChange={setAudioPlayerOpen}
+        audioSrc={audioSrc}
+        noteTitle={title}
+      />
     </div>
   );
 }
