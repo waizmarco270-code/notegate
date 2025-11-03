@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Plus, Search, Moon, Sun, Star, Briefcase, Lightbulb, ChevronDown, Folder, Settings, User, LogOut } from "lucide-react";
+import { Home, Plus, Search, Moon, Sun, Star, Briefcase, Lightbulb, ChevronDown, Folder, Settings, User, LogOut, Inbox } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +11,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useNotes } from "@/context/notes-provider";
 import { cn } from "@/lib/utils";
 import { AuthDialog } from "./auth-dialog";
-import { useState } from "react";
-import { useUser } from "@/firebase";
+import { useState, useMemo } from "react";
+import { useUser, useFirestore, useCollection } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { collection, query, where } from "firebase/firestore";
+import { InboxDialog } from "./inbox-dialog";
 
 interface SidebarProps {
   notes: Note[];
@@ -47,7 +49,20 @@ export function Sidebar({
   const { isDarkMode, setDarkMode, setOpenSettings } = useTheme();
   const { allCategories, setActiveNoteId } = useNotes();
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
+  const [isInboxOpen, setInboxOpen] = useState(false);
   const { user, auth } = useUser();
+  const firestore = useFirestore();
+
+  const inboxQuery = useMemo(() => {
+    if (!user || !firestore) return null;
+    return query(
+      collection(firestore, `users/${user.uid}/inbox`),
+      where("status", "==", "pending")
+    );
+  }, [user, firestore]);
+
+  const { data: inboxItems } = useCollection(inboxQuery);
+  const pendingRequests = inboxItems?.length || 0;
 
   const categoryIcons: { [key: string]: React.ElementType } = {
     "Personal": User,
@@ -147,6 +162,21 @@ export function Sidebar({
             >
               <Home className="mr-2 h-4 w-4" /> Home
           </Button>
+          {user && (
+            <Button
+              variant="ghost"
+              className="w-full justify-start relative"
+              onClick={() => setInboxOpen(true)}
+            >
+              <Inbox className="mr-2 h-4 w-4" />
+              Inbox
+              {pendingRequests > 0 && (
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
+                  {pendingRequests}
+                </span>
+              )}
+            </Button>
+          )}
           <Button 
               variant={activeCategory === null ? "secondary" : "ghost"}
               className="w-full justify-start"
@@ -199,6 +229,7 @@ export function Sidebar({
         />
       </aside>
       <AuthDialog open={isAuthDialogOpen} onOpenChange={setAuthDialogOpen} />
+      {user && <InboxDialog open={isInboxOpen} onOpenChange={setInboxOpen} />}
     </>
   );
 }

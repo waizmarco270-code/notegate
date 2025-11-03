@@ -19,6 +19,7 @@ interface NotesContextType {
   deleteCategory: (category: string) => void;
   userCategories: string[];
   importData: (data: { notes: Note[]; categories: string[] }) => void;
+  importSharedNote: (note: Note) => void;
 }
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
@@ -108,6 +109,28 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const importSharedNote = (sharedNote: Note) => {
+    // Prevent duplicates
+    const noteExists = notes.some(note => note.id === sharedNote.id);
+    if (!noteExists) {
+        const newNote: Note = {
+            ...sharedNote,
+            // You might want to reset some properties, e.g., category or favorite status
+            category: null,
+            isFavorite: false,
+            // Ensure dates are in ISO format
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        };
+        setNotes([newNote, ...notes]);
+        setActiveNoteId(newNote.id);
+    } else {
+        // If note already exists (e.g. shared back), maybe just activate it
+        setActiveNoteId(sharedNote.id);
+    }
+  };
+
+
   const allCategories = useMemo(() => [...new Set([...PREDEFINED_CATEGORIES, ...userCategories])], [userCategories]);
   const allTags = useMemo(() => [...new Set(notes.flatMap(note => note.tags))], [notes]);
   
@@ -124,7 +147,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     addCategory,
     deleteCategory,
     userCategories,
-    importData
+    importData,
+    importSharedNote
   };
 
   return (

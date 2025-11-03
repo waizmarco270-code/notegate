@@ -19,3 +19,12 @@ export type UserProfile = {
   email: string;
   photoURL?: string;
 }
+
+export type SharedNote = {
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  noteId: string;
+  status: "pending" | "accepted" | "rejected";
+  createdAt: string; // Should be a server timestamp, but string for type consistency
+};
