@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore } from "@/firebase";
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, where, getDocs, addDoc, serverTimestamp, orderBy, startAt, endAt } from "firebase/firestore";
 import type { UserProfile } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Loader2 } from "lucide-react";
@@ -40,12 +40,24 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
     e.preventDefault();
     if (!firestore || !searchQuery.trim()) return;
 
+    const searchTerm = searchQuery.trim();
+    if (!searchTerm.startsWith('@')) {
+        toast({ variant: "destructive", title: "Invalid Search", description: "Username must start with @" });
+        return;
+    }
+
     setIsSearching(true);
     setSearchResults([]);
     setSelectedUser(null);
     
     const usersRef = collection(firestore, "users");
-    const q = query(usersRef, where("username", "==", searchQuery.trim()));
+    // Use a range query for "starts with" search
+    const q = query(
+        usersRef, 
+        orderBy("username"), 
+        startAt(searchTerm), 
+        endAt(searchTerm + '\uf8ff')
+    );
     
     try {
       const querySnapshot = await getDocs(q);
@@ -111,7 +123,7 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
         <DialogHeader>
           <DialogTitle>Share Note</DialogTitle>
           <DialogDescription>
-            Search for a NotesGate user by their exact username (e.g., @johndoe) to share this note with.
+            Search for a NotesGate user by their username (e.g., @johndoe) to share this note with.
           </DialogDescription>
         </DialogHeader>
         
@@ -123,7 +135,7 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
                   id="username-search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="@username"
+                  placeholder="Start typing a username, e.g., @john..."
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isSearching}>
@@ -182,4 +194,3 @@ export function ShareDialog({ open, onOpenChange, noteId, currentUserId }: Share
     </Dialog>
   );
 }
-
