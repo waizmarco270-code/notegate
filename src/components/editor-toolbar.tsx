@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette, CaseSensitive, Heading, Pilcrow, Image } from "lucide-react";
+import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Heading3, AlignLeft, AlignCenter, AlignRight, Palette, CaseSensitive, Heading, Pilcrow, Image, Text, CaseUpper, CaseLower, Type } from "lucide-react";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -25,6 +25,7 @@ interface EditorToolbarProps {
   onInsertOrderedList: () => void;
   onInsertImage: () => void;
   onFormat: (command: string, value?: string) => void;
+  onConvertCase: (caseType: 'upper' | 'lower' | 'title' | 'sentence') => void;
   applyToAll: boolean;
   onApplyToAllChange: (value: boolean) => void;
 }
@@ -34,7 +35,7 @@ const colors = [
     "#FFA500", "#800080", "#008000", "#FFC0CB", "#A52A2A", "#808080", "#FFFFFF"
 ];
 
-export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, currentColor, onColorChange, onInsertUnorderedList, onInsertOrderedList, onInsertImage, onFormat, applyToAll, onApplyToAllChange }: EditorToolbarProps) {
+export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFamilyChange, currentColor, onColorChange, onInsertUnorderedList, onInsertOrderedList, onInsertImage, onFormat, onConvertCase, applyToAll, onApplyToAllChange }: EditorToolbarProps) {
   const numericFontSize = parseInt(fontSize.replace('px', ''), 10);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   
@@ -96,21 +97,27 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
                 <CaseSensitive className="h-4 w-4" />
             </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="flex gap-1">
+        <DropdownMenuContent className="w-48">
             <DropdownMenuItem onSelect={() => onFormat('bold')}>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Bold className="h-4 w-4" />
-                </Button>
+                <Bold className="h-4 w-4 mr-2" /> Bold
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onFormat('italic')}>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Italic className="h-4 w-4" />
-                </Button>
+                <Italic className="h-4 w-4 mr-2" /> Italic
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onFormat('underline')}>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Underline className="h-4 w-4" />
-                </Button>
+                <Underline className="h-4 w-4 mr-2" /> Underline
+            </DropdownMenuItem>
+             <DropdownMenuItem onSelect={() => onConvertCase('upper')}>
+                <CaseUpper className="h-4 w-4 mr-2" /> UPPERCASE
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onConvertCase('lower')}>
+                <CaseLower className="h-4 w-4 mr-2" /> lowercase
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onConvertCase('title')}>
+                <Type className="h-4 w-4 mr-2" /> Title Case
+            </DropdownMenuItem>
+             <DropdownMenuItem onSelect={() => onConvertCase('sentence')}>
+                <Text className="h-4 w-4 mr-2" /> Sentence case
             </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -211,5 +218,3 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
     </div>
   );
 }
-
-    

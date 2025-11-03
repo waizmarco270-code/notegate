@@ -214,6 +214,34 @@ export function NoteEditor({ note }: NoteEditorProps) {
       handleContentBlur();
     }
   };
+  
+  const handleConvertCase = (caseType: 'upper' | 'lower' | 'title' | 'sentence') => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    const selectedText = range.toString();
+    
+    let convertedText = "";
+    switch (caseType) {
+        case 'upper':
+            convertedText = selectedText.toUpperCase();
+            break;
+        case 'lower':
+            convertedText = selectedText.toLowerCase();
+            break;
+        case 'title':
+            convertedText = selectedText.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+            break;
+        case 'sentence':
+            convertedText = selectedText.toLowerCase().replace(/(^\w{1}|\.\s*\w{1})/g, char => char.toUpperCase());
+            break;
+    }
+
+    if (selectedText) {
+        document.execCommand("insertText", false, convertedText);
+    }
+  };
 
   const handleInsertImage = () => {
     imageInputRef.current?.click();
@@ -382,6 +410,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         onInsertOrderedList={() => handleInsertList("insertOrderedList")}
         onInsertImage={handleInsertImage}
         onFormat={handleFormat}
+        onConvertCase={handleConvertCase}
         applyToAll={applyToAll}
         onApplyToAllChange={setApplyToAll}
       />
@@ -427,5 +456,3 @@ export function NoteEditor({ note }: NoteEditorProps) {
     </div>
   );
 }
-
-    
