@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Languages, Loader2 } from "lucide-react";
+import { Languages, Loader2, Replace } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -19,6 +20,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { translateNoteAction } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,13 +38,14 @@ interface TranslateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   noteContent: string;
+  onReplaceContent: (newContent: string) => void;
 }
 
 const supportedLanguages = [
   "English", "Spanish", "French", "German", "Hindi", "Arabic", "Mandarin Chinese", "Japanese", "Russian", "Portuguese"
 ];
 
-export function TranslateDialog({ open, onOpenChange, noteContent }: TranslateDialogProps) {
+export function TranslateDialog({ open, onOpenChange, noteContent, onReplaceContent }: TranslateDialogProps) {
   const [targetLanguage, setTargetLanguage] = useState("Hindi");
   const [translatedContent, setTranslatedContent] = useState("");
   const [isTranslating, setIsTranslating] = useState(false);
@@ -58,6 +71,11 @@ export function TranslateDialog({ open, onOpenChange, noteContent }: TranslateDi
         });
     }
   };
+
+  const handleReplaceClick = () => {
+    onReplaceContent(translatedContent);
+    onOpenChange(false);
+  }
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -121,7 +139,32 @@ export function TranslateDialog({ open, onOpenChange, noteContent }: TranslateDi
             </div>
         </div>
 
+        <DialogFooter>
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="default" disabled={!translatedContent || isTranslating}>
+                        <Replace className="mr-2 h-4 w-4" />
+                        Replace Original Content
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will replace your original note content with the translation. The original version will be saved in your note's history.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleReplaceClick}>Replace</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </DialogFooter>
+
       </DialogContent>
     </Dialog>
   );
 }
+
+    

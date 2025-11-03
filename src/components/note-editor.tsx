@@ -403,6 +403,14 @@ export function NoteEditor({ note }: NoteEditorProps) {
     }
   }
 
+  const handleReplaceContent = (newContent: string) => {
+    if (contentRef.current) {
+        contentRef.current.innerHTML = newContent;
+        updateNote({ id: note.id, content: newContent });
+        toast({ title: "Note content has been replaced with the translation." });
+    }
+  };
+
 
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
   const isLocked = note.password !== null;
@@ -631,6 +639,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         open={isTranslateDialogOpen}
         onOpenChange={setTranslateDialogOpen}
         noteContent={note.content || ""}
+        onReplaceContent={handleReplaceContent}
       />
       {user && (
         <ShareDialog 
@@ -649,3 +658,5 @@ export function NoteEditor({ note }: NoteEditorProps) {
     </div>
   );
 }
+
+    
