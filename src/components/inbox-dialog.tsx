@@ -49,12 +49,13 @@ function ShareRequestCard({ request }: { request: SharedNote & { id: string } })
         try {
             const shareRef = doc(firestore, `users/${user.uid}/inbox/${request.id}`);
             
+            // The full note object is fetched by useDoc, we pass it to be imported
             await importSharedNote({
                 ...note,
                 id: request.noteId, 
             });
             
-            await updateDoc(shareRef, { status: "accepted" });
+            // After successful import, delete the share request
             await deleteDoc(shareRef);
 
             toast({ title: "Note accepted!", description: `"${note.title}" has been added to your notes.` });
@@ -62,6 +63,7 @@ function ShareRequestCard({ request }: { request: SharedNote & { id: string } })
         } catch (error) {
             console.error("Error accepting share:", error);
             toast({ variant: "destructive", title: "Accept failed", description: "Could not accept the note." });
+        } finally {
             setIsProcessing(false);
         }
     };
@@ -71,12 +73,12 @@ function ShareRequestCard({ request }: { request: SharedNote & { id: string } })
         setIsProcessing(true);
         try {
             const shareRef = doc(firestore, `users/${user.uid}/inbox/${request.id}`);
-            await updateDoc(shareRef, { status: "rejected" });
-            toast({ title: "Note rejected." });
             await deleteDoc(shareRef);
+            toast({ title: "Note rejected." });
         } catch (error) {
             console.error("Error rejecting share:", error);
             toast({ variant: "destructive", title: "Reject failed" });
+        } finally {
             setIsProcessing(false);
         }
     };
@@ -90,9 +92,8 @@ function ShareRequestCard({ request }: { request: SharedNote & { id: string } })
         return <div className="p-4 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></div>
     }
 
+    // If the original note or user was deleted, don't show the card.
     if (!note || !fromUser) {
-        // This can happen if the note or user was deleted, or due to permission errors.
-        // We can optionally delete this broken share request.
         return null;
     }
 
