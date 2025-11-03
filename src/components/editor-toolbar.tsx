@@ -218,3 +218,5 @@ export function EditorToolbar({ fontSize, onFontSizeChange, fontFamily, onFontFa
     </div>
   );
 }
+
+    
