@@ -222,12 +222,13 @@ export function NoteEditor({ note }: NoteEditorProps) {
     const selection = window.getSelection();
     let textToConvert = "";
     let isFullContent = false;
+    let range: Range | undefined;
 
     if (applyToAll || !selection || selection.rangeCount === 0 || selection.toString().trim() === '') {
         textToConvert = contentRef.current.innerText;
         isFullContent = true;
     } else {
-        const range = selection.getRangeAt(0);
+        range = selection.getRangeAt(0);
         textToConvert = range.toString();
     }
 
@@ -252,8 +253,10 @@ export function NoteEditor({ note }: NoteEditorProps) {
     if (isFullContent) {
         contentRef.current.innerText = convertedText;
         handleContentBlur();
-    } else if (selection) {
-        document.execCommand("insertText", false, convertedText);
+    } else if (selection && range) {
+        range.deleteContents();
+        range.insertNode(document.createTextNode(convertedText));
+        handleContentBlur();
     }
   };
 
