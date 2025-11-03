@@ -1,6 +1,7 @@
+
 "use client";
 
-import { Home, Plus, Search, Moon, Sun, Star, Briefcase, Lightbulb, ChevronDown, Folder, Settings, User, LogOut, Inbox } from "lucide-react";
+import { Home, Plus, Search, Moon, Sun, Star, Briefcase, Lightbulb, ChevronDown, Folder, Settings, User, LogOut, Inbox, FilePlus } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import { useUser, useFirestore, useCollection } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { collection, query, where } from "firebase/firestore";
 import { InboxDialog } from "./inbox-dialog";
+import { TranslateDialog } from "./translate-dialog";
 
 interface SidebarProps {
   notes: Note[];
@@ -47,9 +49,10 @@ export function Sidebar({
   onSetCategory
 }: SidebarProps) {
   const { isDarkMode, setDarkMode, setOpenSettings } = useTheme();
-  const { allCategories, setActiveNoteId } = useNotes();
+  const { allCategories, setActiveNoteId, createNoteWithOptions } = useNotes();
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
   const [isInboxOpen, setInboxOpen] = useState(false);
+  const [isTranslateOpen, setTranslateOpen] = useState(false);
   const { user, auth } = useUser();
   const firestore = useFirestore();
 
@@ -84,6 +87,10 @@ export function Sidebar({
     if (!name) return "";
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   }
+  
+  const handleSaveAsNewNote = (title: string, content: string) => {
+    createNoteWithOptions({ title, content });
+  };
 
   return (
     <>
@@ -140,9 +147,15 @@ export function Sidebar({
           </div>
         </header>
 
-        <Button variant="default" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={onNewNote}>
-          <Plus className="h-4 w-4 mr-2" /> New Note
-        </Button>
+        <div className="flex gap-2">
+            <Button variant="default" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90" onClick={onNewNote}>
+              <Plus className="h-4 w-4 mr-2" /> New Note
+            </Button>
+            <Button variant="outline" size="icon" onClick={() => setTranslateOpen(true)} title="Import and Translate">
+                <FilePlus className="h-4 w-4"/>
+            </Button>
+        </div>
+
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -230,6 +243,12 @@ export function Sidebar({
       </aside>
       <AuthDialog open={isAuthDialogOpen} onOpenChange={setAuthDialogOpen} />
       {user && <InboxDialog open={isInboxOpen} onOpenChange={setInboxOpen} />}
+       <TranslateDialog
+        open={isTranslateOpen}
+        onOpenChange={setTranslateOpen}
+        onSaveAsNewNote={handleSaveAsNewNote}
+        isDocumentMode={true}
+      />
     </>
   );
 }

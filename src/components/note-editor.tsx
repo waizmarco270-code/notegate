@@ -38,6 +38,7 @@ import { debounce } from "lodash";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface NoteEditorProps {
   note: Note;
@@ -81,6 +82,10 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const [bilingualTranslatedContent, setBilingualTranslatedContent] = useState("");
   const [isBilingualTranslating, setIsBilingualTranslating] = useState(false);
 
+  // States for Selection Popover
+  const [selectionPopoverOpen, setSelectionPopoverOpen] = useState(false);
+  const [selectionRange, setSelectionRange] = useState<Range | null>(null);
+
   useEffect(() => {
     const handler = setTimeout(() => {
       if (title !== note.title) {
@@ -101,6 +106,39 @@ export function NoteEditor({ note }: NoteEditorProps) {
       contentRef.current.innerHTML = note.content || "";
     }
   }, [note]);
+  
+  useEffect(() => {
+    const handleMouseUp = () => {
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            if (!range.collapsed && contentRef.current?.contains(range.commonAncestorContainer)) {
+                setSelectionRange(range);
+                setSelectionPopoverOpen(true);
+            } else {
+                setSelectionPopoverOpen(false);
+            }
+        } else {
+            setSelectionPopoverOpen(false);
+        }
+    };
+    
+    const editorDiv = contentRef.current;
+    editorDiv?.addEventListener('mouseup', handleMouseUp);
+    
+    // Hide popover on scroll or click outside
+    const handleClickOutside = (event: MouseEvent) => {
+        if (contentRef.current && !contentRef.current.contains(event.target as Node)) {
+            setSelectionPopoverOpen(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+        editorDiv?.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const debouncedTranslate = useMemo(
     () =>
@@ -242,6 +280,8 @@ export function NoteEditor({ note }: NoteEditorProps) {
   
   const handleContentBlur = () => {
     handleContentChange();
+    // Don't hide the popover on blur, only on mouse up or click outside
+    // setSelectionPopoverOpen(false); 
   };
 
   const handleColorChange = (color: string) => {
@@ -443,11 +483,16 @@ export function NoteEditor({ note }: NoteEditorProps) {
   }
 
   const handleReplaceContent = (newContent: string) => {
-    if (contentRef.current) {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0 && selectionRange) {
+        selection.removeAllRanges();
+        selection.addRange(selectionRange);
+        document.execCommand('insertHTML', false, newContent);
+    } else if (contentRef.current) {
         contentRef.current.innerHTML = newContent;
-        updateNote({ id: note.id, content: newContent });
-        toast({ title: "Note content has been replaced with the translation." });
     }
+    handleContentChange();
+    toast({ title: "Note content has been updated." });
   };
 
   const handleToggleBilingualMode = () => {
@@ -475,6 +520,17 @@ export function NoteEditor({ note }: NoteEditorProps) {
         debouncedTranslate(contentRef.current.innerHTML, bilingualTargetLanguage);
     }
   }, [bilingualTargetLanguage, isBilingualMode, debouncedTranslate]);
+  
+  const getSelectedHTML = () => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const div = document.createElement("div");
+        div.appendChild(range.cloneContents());
+        return div.innerHTML;
+    }
+    return note.content || "";
+  }
 
 
   const wordCount = contentRef.current?.innerText.trim().split(/\s+/).filter(Boolean).length || 0;
@@ -519,7 +575,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
                 <DropdownMenuContent align="end">
                     <DropdownMenuItem onSelect={() => setTranslateDialogOpen(true)}>
                         <Languages className="mr-2 h-4 w-4" />
-                        <span>Translate</span>
+                        <span>Translate...</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={handleListenToNote} disabled={isGeneratingAudio}>
                         <Ear className="mr-2 h-4 w-4" />
@@ -659,8 +715,25 @@ export function NoteEditor({ note }: NoteEditorProps) {
         onToggleBilingualMode={handleToggleBilingualMode}
       />
       
+      <Popover open={selectionPopoverOpen} onOpenChange={setSelectionPopoverOpen}>
+          <PopoverTrigger asChild>
+            <div style={{
+                position: 'absolute',
+                top: `${selectionRange ? selectionRange.getBoundingClientRect().top - 40 : 0}px`,
+                left: `${selectionRange ? selectionRange.getBoundingClientRect().left + selectionRange.getBoundingClientRect().width / 2 : 0}px`,
+                transform: 'translateX(-50%)',
+            }} />
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-1">
+             <Button variant="ghost" size="sm" onClick={() => setTranslateDialogOpen(true)}>
+                <Languages className="h-4 w-4 mr-2"/>
+                Translate
+             </Button>
+          </PopoverContent>
+      </Popover>
+      
       <div className={cn("flex-1 overflow-hidden flex", isBilingualMode ? "flex-row" : "flex-col")}>
-        <div className={cn("overflow-auto p-4 sm:p-6", isBilingualMode ? "w-1/2" : "w-full h-full")}>
+        <div className={cn("overflow-auto p-4 sm:p-6 relative", isBilingualMode ? "w-1/2" : "w-full h-full")}>
             <div
               ref={contentRef}
               contentEditable={true}
@@ -764,8 +837,9 @@ export function NoteEditor({ note }: NoteEditorProps) {
        <TranslateDialog
         open={isTranslateDialogOpen}
         onOpenChange={setTranslateDialogOpen}
-        noteContent={note.content || ""}
+        noteContent={getSelectedHTML()}
         onReplaceContent={handleReplaceContent}
+        isSelection={selectionPopoverOpen}
       />
       {user && (
         <ShareDialog 
@@ -784,6 +858,3 @@ export function NoteEditor({ note }: NoteEditorProps) {
     </div>
   );
 }
-
-    
-    

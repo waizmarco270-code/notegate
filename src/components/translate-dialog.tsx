@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Languages, Loader2, Replace, Star, Columns } from "lucide-react";
+import { Languages, Loader2, Replace, Star, Columns, Upload, FileDown, Save } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -33,12 +33,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import { translateNoteAction } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "./ui/input";
 
 interface TranslateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  noteContent: string;
-  onReplaceContent: (newContent: string) => void;
+  noteContent?: string;
+  onReplaceContent?: (newContent: string) => void;
+  onSaveAsNewNote?: (title: string, content: string) => void;
+  isSelection?: boolean;
+  isDocumentMode?: boolean;
 }
 
 const supportedLanguages = [
@@ -56,20 +60,31 @@ const supportedLanguages = [
 ];
 
 
-export function TranslateDialog({ open, onOpenChange, noteContent, onReplaceContent }: TranslateDialogProps) {
+export function TranslateDialog({ 
+    open, 
+    onOpenChange, 
+    noteContent = "",
+    onReplaceContent,
+    onSaveAsNewNote,
+    isSelection = false,
+    isDocumentMode = false,
+}: TranslateDialogProps) {
   const [targetLanguage, setTargetLanguage] = useState("Hinglish");
+  const [originalContent, setOriginalContent] = useState(noteContent);
   const [translatedContent, setTranslatedContent] = useState("");
   const [isTranslating, setIsTranslating] = useState(false);
+  const [fileName, setFileName] = useState("document");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const handleTranslate = async () => {
-    if (!noteContent) {
-        toast({ variant: "destructive", title: "Cannot translate an empty note." });
+    if (!originalContent) {
+        toast({ variant: "destructive", title: "Cannot translate empty content." });
         return;
     }
     setIsTranslating(true);
     setTranslatedContent("");
-    const result = await translateNoteAction({ noteContent, targetLanguage });
+    const result = await translateNoteAction({ noteContent: originalContent, targetLanguage });
     setIsTranslating(false);
 
     if (result.translatedContent) {
@@ -84,61 +99,123 @@ export function TranslateDialog({ open, onOpenChange, noteContent, onReplaceCont
   };
 
   const handleReplaceClick = () => {
-    onReplaceContent(translatedContent);
+    if(onReplaceContent) {
+        onReplaceContent(translatedContent);
+    }
+    onOpenChange(false);
+  }
+  
+  const handleSaveAsNewNote = () => {
+    if (onSaveAsNewNote) {
+        const newTitle = `Translated: ${fileName}`;
+        onSaveAsNewNote(newTitle, translatedContent);
+        toast({ title: "Success", description: "Translated content saved as a new note." });
+    }
     onOpenChange(false);
   }
 
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setFileName(file.name.split('.')[0] || "document");
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const text = e.target?.result as string;
+        setOriginalContent(text);
+    };
+    reader.onerror = () => {
+        toast({ variant: "destructive", title: "File Error", description: "Could not read the selected file." });
+    };
+    reader.readAsText(file);
+  };
+  
+  const handleDownload = () => {
+    const blob = new Blob([translatedContent], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${fileName}_${targetLanguage}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({ title: "Download Started", description: `Your translated file is being downloaded.` });
+  };
+
+
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
+        setOriginalContent(noteContent); // Reset original content on close
         setTranslatedContent("");
         setIsTranslating(false);
+        setFileName("document");
     }
     onOpenChange(isOpen);
   }
+  
+  // Update content when dialog opens with new selection
+  useState(() => {
+    if (open) {
+      setOriginalContent(noteContent);
+    }
+  });
+
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-headline">
             <Languages className="h-5 w-5 text-primary" />
-            Translate Note
+            {isDocumentMode ? "Translate Document" : "Translate Note"}
           </DialogTitle>
           <DialogDescription>
-            Select a language to translate your note content. The original note will not be changed.
+             {isDocumentMode 
+                ? "Import a file, translate its content, and save or download the result."
+                : `Translate ${isSelection ? "your selection" : "the note content"}. The original will be saved to history if you replace it.`
+             }
           </DialogDescription>
         </DialogHeader>
+        
+         <div className="flex flex-col sm:flex-row items-center gap-4 my-4">
+            {isDocumentMode && (
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="mr-2 h-4 w-4" /> Import File
+                </Button>
+            )}
+            <Input type="file" ref={fileInputRef} onChange={handleFileImport} className="hidden" accept=".txt,.html" />
 
-        <div className="flex flex-col sm:flex-row items-center gap-4 my-4">
-          <div className="grid grid-cols-2 gap-4 w-full sm:w-auto">
-            <p className="text-sm font-medium text-right my-auto">Translate to:</p>
-            <Select value={targetLanguage} onValueChange={setTargetLanguage}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent>
-                {supportedLanguages.map(lang => (
-                  <SelectItem key={lang.name} value={lang.name}>
-                    <div className="flex items-center gap-2">
-                      {lang.name}
-                      {lang.premium && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button onClick={handleTranslate} disabled={isTranslating} className="w-full sm:w-auto">
-            {isTranslating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Translate
-          </Button>
+            <div className="grid grid-cols-2 gap-4 w-full sm:w-auto">
+                <p className="text-sm font-medium text-right my-auto">Translate to:</p>
+                <Select value={targetLanguage} onValueChange={setTargetLanguage}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                    {supportedLanguages.map(lang => (
+                    <SelectItem key={lang.name} value={lang.name}>
+                        <div className="flex items-center gap-2">
+                        {lang.name}
+                        {lang.premium && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />}
+                        </div>
+                    </SelectItem>
+                    ))}
+                </SelectContent>
+                </Select>
+            </div>
+            <Button onClick={handleTranslate} disabled={isTranslating || !originalContent} className="w-full sm:w-auto">
+                {isTranslating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Translate
+            </Button>
         </div>
+
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[50vh]">
             <div>
                 <h3 className="text-sm font-semibold mb-2 text-muted-foreground">Original</h3>
                 <ScrollArea className="rounded-md border p-4 h-64 bg-secondary/20">
-                    <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: noteContent || "<p>Nothing to translate.</p>"}} />
+                    <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: originalContent || "<p>Nothing to translate.</p>"}} />
                 </ScrollArea>
             </div>
             <div>
@@ -155,33 +232,41 @@ export function TranslateDialog({ open, onOpenChange, noteContent, onReplaceCont
             </div>
         </div>
 
-        <DialogFooter>
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant="default" disabled={!translatedContent || isTranslating}>
-                        <Replace className="mr-2 h-4 w-4" />
-                        Replace Original Content
+        <DialogFooter className="gap-2 sm:gap-0">
+             {isDocumentMode ? (
+                <>
+                    <Button variant="secondary" onClick={handleSaveAsNewNote} disabled={!translatedContent || isTranslating}>
+                        <Save className="mr-2 h-4 w-4" /> Save as New Note
                     </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will replace your original note content with the translation. The original version will be saved in your note's history.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleReplaceClick}>Replace</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                    <Button variant="default" onClick={handleDownload} disabled={!translatedContent || isTranslating}>
+                        <FileDown className="mr-2 h-4 w-4" /> Download
+                    </Button>
+                </>
+             ) : (
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="default" disabled={!translatedContent || isTranslating}>
+                            <Replace className="mr-2 h-4 w-4" />
+                            Replace Original
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will replace your original content with the translation. The original version will be saved in your note's history.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleReplaceClick}>Replace</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
         </DialogFooter>
 
       </DialogContent>
     </Dialog>
   );
 }
-
-    
-    

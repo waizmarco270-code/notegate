@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useMemo, useEffect } from "react";
@@ -11,6 +12,7 @@ interface NotesContextType {
   activeNote: Note | null;
   setActiveNoteId: (id: string | null) => void;
   createNote: () => void;
+  createNoteWithOptions: (options: { title: string; content: string }) => void;
   updateNote: (note: Partial<Note> & { id: string }) => void;
   deleteNote: (id: string) => void;
   allTags: string[];
@@ -46,11 +48,11 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     }
   }, [activeNoteId, notes]);
 
-  const createNote = () => {
+  const createNoteWithOptions = (options: { title: string; content: string }) => {
     const newNote: Note = {
       id: `note-${Date.now()}`,
-      title: "New Note",
-      content: "",
+      title: options.title,
+      content: options.content,
       category: null,
       tags: [],
       createdAt: new Date().toISOString(),
@@ -61,6 +63,10 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     };
     setNotes([newNote, ...notes]);
     setActiveNoteId(newNote.id);
+  };
+
+  const createNote = () => {
+    createNoteWithOptions({ title: "New Note", content: "" });
   };
 
   const updateNote = (updatedFields: Partial<Note> & { id: string }) => {
@@ -177,6 +183,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     activeNote,
     setActiveNoteId,
     createNote,
+    createNoteWithOptions,
     updateNote,
     deleteNote,
     allTags,
