@@ -22,8 +22,8 @@ service cloud.firestore {
     // Allow a user to read a specific note from another user if they have a pending or accepted share request for it
     match /users/{sharerId}/notes/{noteId} {
       allow get: if request.auth != null && (
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)/inbox/$(*)) ||
-        exists(/databases/$(database)/documents/users/$(sharerId)/inbox/$(*))
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)/inbox/$(noteId)) ||
+        existsAfter(/databases/$(database)/documents/users/$(sharerId)/inbox/$(noteId))
       );
     }
 

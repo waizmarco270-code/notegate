@@ -30,8 +30,9 @@ export const useDoc = <T extends DocumentData>(
         setError(null);
       },
       (err) => {
-        console.error(err);
+        console.error("useDoc Error:", err);
         setError(err);
+        setData(null);
         setLoading(false);
       }
     );
