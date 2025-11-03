@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus, Ear, Languages, Replace, Loader2, PanelRightClose } from "lucide-react";
+import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus, Ear, Languages, Replace, Loader2, PanelRightClose, X } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -156,18 +156,24 @@ export function NoteEditor({ note }: NoteEditorProps) {
             setBilingualTranslatedContent(`<p class="text-destructive">${result.error || "Translation failed."}</p>`);
         }
       }, 1000), 
-    [isBilingualMode]
+    [isBilingualMode, bilingualTargetLanguage]
   );
   
   const handleContentChange = () => {
     const currentContent = contentRef.current?.innerHTML || "";
+    if (isBilingualMode) {
+        setIsBilingualTranslating(true);
+        debouncedTranslate(currentContent, bilingualTargetLanguage);
+    }
+  };
+
+  const handleContentBlur = () => {
+    const currentContent = contentRef.current?.innerHTML || "";
     if (currentContent !== note.content) {
       updateNote({ id: note.id, content: currentContent });
     }
-    if (isBilingualMode) {
-        setIsBilingualTranslating(true);
-        debouncedTranslate(contentRef.current?.innerHTML || '', bilingualTargetLanguage);
-    }
+    // Don't hide the popover on blur, only on mouse up or click outside
+    // setSelectionPopoverOpen(false); 
   };
 
 
@@ -259,7 +265,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
   const applyStyleToAll = (style: Partial<CSSStyleDeclaration>) => {
     if (contentRef.current) {
       Object.assign(contentRef.current.style, style);
-      handleContentChange();
+      handleContentBlur(); // Save the note after applying style
     }
   };
 
@@ -278,12 +284,6 @@ export function NoteEditor({ note }: NoteEditorProps) {
     }
   };
   
-  const handleContentBlur = () => {
-    handleContentChange();
-    // Don't hide the popover on blur, only on mouse up or click outside
-    // setSelectionPopoverOpen(false); 
-  };
-
   const handleColorChange = (color: string) => {
     setCurrentColor(color);
     handleFormat('foreColor', color);
@@ -293,7 +293,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
     if(contentRef.current) {
       contentRef.current.focus();
       document.execCommand(type, false, undefined);
-      handleContentChange();
+      handleContentBlur();
     }
   };
 
@@ -308,7 +308,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         const selection = window.getSelection();
         selection?.collapseToEnd();
       }
-      handleContentChange();
+      handleContentBlur();
     }
   };
   
@@ -353,7 +353,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         range.deleteContents();
         range.insertNode(document.createTextNode(convertedText));
     }
-    handleContentChange();
+    handleContentBlur();
   };
 
   const handleInsertImage = () => {
@@ -398,7 +398,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
         if (contentRef.current) {
           contentRef.current.focus();
           document.execCommand("insertHTML", false, imgTag);
-          handleContentChange();
+          handleContentBlur();
         }
       };
     };
@@ -491,7 +491,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
     } else if (contentRef.current) {
         contentRef.current.innerHTML = newContent;
     }
-    handleContentChange();
+    handleContentBlur();
     toast({ title: "Note content has been updated." });
   };
 
@@ -858,3 +858,5 @@ export function NoteEditor({ note }: NoteEditorProps) {
     </div>
   );
 }
+
+    
