@@ -67,7 +67,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       isHidden: false,
       history: [],
     };
-    setNotes([newNote, ...notes]);
+    setNotes(currentNotes => [newNote, ...currentNotes]);
     setActiveNoteId(newNote.id);
   };
 

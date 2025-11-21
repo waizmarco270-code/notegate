@@ -2,7 +2,6 @@
 
 import { Home, Search, Plus, Settings, LayoutGrid } from 'lucide-react';
 import { Button } from './ui/button';
-import { useNotes } from '@/context/notes-provider';
 import { useTheme } from '@/context/theme-provider';
 import { cn } from '@/lib/utils';
 
@@ -10,10 +9,10 @@ interface MobileBottomNavProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onMenuClick: () => void;
+  onNewNote: () => void;
 }
 
-export function MobileBottomNav({ activeTab, setActiveTab, onMenuClick }: MobileBottomNavProps) {
-  const { createNote } = useNotes();
+export function MobileBottomNav({ activeTab, setActiveTab, onMenuClick, onNewNote }: MobileBottomNavProps) {
   const { setOpenSettings } = useTheme();
 
   const navItems = [
@@ -26,7 +25,7 @@ export function MobileBottomNav({ activeTab, setActiveTab, onMenuClick }: Mobile
 
   const handleNavClick = (item: (typeof navItems)[0]) => {
     if (item.isAction) {
-      createNote();
+      onNewNote();
     } else if (item.name === 'settings') {
       setOpenSettings(true);
     } else if (item.name === 'menu') {

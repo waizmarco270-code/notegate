@@ -14,9 +14,10 @@ import type { Note } from "@/lib/types";
 
 interface NoteViewProps {
   onInitiateDelete?: (note: Note) => void;
+  onOpenTemplates?: () => void;
 }
 
-export function NoteView({ onInitiateDelete }: NoteViewProps) {
+export function NoteView({ onInitiateDelete, onOpenTemplates }: NoteViewProps) {
   const { activeNote, setActiveNoteId, createNote } = useNotes();
   const { setOpenSettings } = useTheme();
   const [unlocked, setUnlocked] = useState(false);
@@ -89,7 +90,7 @@ export function NoteView({ onInitiateDelete }: NoteViewProps) {
                     <Plus className="mr-4 h-5 w-5" />
                     Create a New Note
                 </Button>
-                 <Button variant="outline" className="w-full justify-start" size="lg" disabled>
+                 <Button variant="outline" className="w-full justify-start" size="lg" onClick={onOpenTemplates}>
                     <FileText className="mr-4 h-5 w-5" />
                     Explore Templates
                 </Button>

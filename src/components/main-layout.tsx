@@ -15,6 +15,7 @@ import { Input } from './ui/input';
 import { NoteList } from './note-list';
 import { DeleteNoteDialog } from './delete-note-dialog';
 import { MobileSidebar } from './mobile-sidebar';
+import { TemplateDialog } from './template-dialog';
 
 export function MainLayout() {
   const {
@@ -32,6 +33,7 @@ export function MainLayout() {
   const [categoryNote, setCategoryNote] = useState<Note | null>(null);
   const [isVaultOpen, setVaultOpen] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
+  const [isTemplateOpen, setTemplateOpen] = useState(false);
   const isMobile = useIsMobile();
   const [activeMobileTab, setActiveMobileTab] = useState('home');
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -171,6 +173,7 @@ export function MainLayout() {
             activeTab={activeMobileTab}
             setActiveTab={setActiveMobileTab}
             onMenuClick={() => setMobileMenuOpen(true)}
+            onNewNote={createNote}
           />
         </div>
          <MobileSidebar
@@ -209,6 +212,7 @@ export function MainLayout() {
             note={noteToDelete}
             onConfirmDelete={handleConfirmDelete}
         />
+        <TemplateDialog open={isTemplateOpen} onOpenChange={setTemplateOpen} />
       </>
     );
   }
@@ -232,7 +236,7 @@ export function MainLayout() {
           onOpenVault={handleOpenVault}
         />
         <main className="flex-1 flex flex-col overflow-auto">
-          <NoteView key={activeNote?.id} onInitiateDelete={setNoteToDelete} />
+          <NoteView key={activeNote?.id} onInitiateDelete={setNoteToDelete} onOpenTemplates={() => setTemplateOpen(true)} />
         </main>
       </div>
       {passwordNote && (
@@ -258,6 +262,7 @@ export function MainLayout() {
             note={noteToDelete}
             onConfirmDelete={handleConfirmDelete}
         />
+        <TemplateDialog open={isTemplateOpen} onOpenChange={setTemplateOpen} />
     </>
   );
 }

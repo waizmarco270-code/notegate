@@ -5,6 +5,7 @@ import { generateTags, GenerateTagsInput } from "@/ai/flows/ai-generate-tags";
 import { textToSpeech, TextToSpeechInput } from "@/ai/flows/ai-text-to-speech";
 import { translateNote, type TranslateNoteInput, type TranslateNoteOutput } from "@/ai/flows/ai-translate-note";
 import { writingAssistant } from "@/ai/flows/ai-writing-assistant";
+import { generateTemplate, type GenerateTemplateInput, type GenerateTemplateOutput } from "@/ai/flows/ai-generate-template";
 import { z } from "zod";
 
 const summarizeSchema = z.object({
