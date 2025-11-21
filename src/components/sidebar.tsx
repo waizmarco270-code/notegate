@@ -242,9 +242,6 @@ export function Sidebar({
               })}
               </DropdownMenuContent>
           </DropdownMenu>
-           <Button variant="ghost" className="w-full justify-start" onClick={onOpenVault}>
-                <KeyRound className="mr-2 h-4 w-4" /> Hidden Vault
-            </Button>
         </nav>
         
 
