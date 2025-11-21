@@ -31,9 +31,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme]);
 
   useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove("font-theme-default", "font-theme-modern", "font-theme-elegant");
-    root.classList.add(`font-theme-${fontTheme}`);
+    const body = window.document.body;
+    body.classList.remove("font-theme-default", "font-theme-modern", "font-theme-elegant");
+    if (fontTheme !== 'default') {
+      body.classList.add(`font-theme-${fontTheme}`);
+    }
   }, [fontTheme]);
   
   const isDarkMode = theme === 'dark';
