@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/context/theme-provider";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
-import { Download, Upload, AlertCircle, ShieldCheck, KeyRound } from "lucide-react";
+import { Download, Upload, AlertCircle, ShieldCheck, KeyRound, Type } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -31,9 +31,11 @@ import { PrivacyDialog } from "./privacy-dialog";
 import { SecretDevQuizDialog } from "./secret-dev-quiz-dialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { VipFeaturesDialog } from "./vip-features-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import type { FontTheme } from "@/context/theme-provider";
 
 export function SettingsDialog() {
-  const { isDarkMode, setDarkMode, openSettings, setOpenSettings } = useTheme();
+  const { isDarkMode, setDarkMode, fontTheme, setFontTheme, openSettings, setOpenSettings } = useTheme();
   const { notes, userCategories, importData } = useNotes();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -130,6 +132,23 @@ a.click();
                 checked={isDarkMode}
                 onCheckedChange={setDarkMode}
               />
+            </div>
+
+             <div className="flex items-center justify-between">
+                <Label htmlFor="font-style" className="flex flex-col gap-1">
+                  <span>Font Style</span>
+                  <span className="text-xs text-muted-foreground">Change the app's typography.</span>
+                </Label>
+                <Select value={fontTheme} onValueChange={(value: FontTheme) => setFontTheme(value)}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a font theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="default">Default</SelectItem>
+                        <SelectItem value="modern">Modern</SelectItem>
+                        <SelectItem value="elegant">Elegant</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
             
             <Separator />

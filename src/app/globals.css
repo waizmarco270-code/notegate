@@ -24,8 +24,21 @@
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
     --radius: 0.5rem;
+
+    --font-body: 'Alegreya', serif;
+    --font-headline: 'Belleza', sans-serif;
   }
 
+  .font-theme-modern {
+    --font-body: 'Inter', sans-serif;
+    --font-headline: 'Lora', serif;
+  }
+
+  .font-theme-elegant {
+    --font-body: 'Montserrat', sans-serif;
+    --font-headline: 'Playfair Display', serif;
+  }
+  
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
