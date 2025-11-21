@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { NoteView } from "@/components/note-view";
 import { useNotes } from "@/context/notes-provider";
@@ -15,6 +16,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { HiddenVault } from "./hidden-vault";
 
 
 export function MainLayout() {
@@ -25,14 +27,28 @@ export function MainLayout() {
   const [passwordNote, setPasswordNote] = useState<Note | null>(null);
   const [categoryNote, setCategoryNote] = useState<Note | null>(null);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isVaultOpen, setVaultOpen] = useState(false);
   const isMobile = useIsMobile();
 
 
   useEffect(() => {
     setIsClient(true);
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        setVaultOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+
   }, []);
 
-  const filteredNotes = notes
+  const visibleNotes = notes.filter(note => !note.isHidden);
+
+  const filteredNotes = visibleNotes
     .filter((note) => {
       const matchesSearch =
         (note.title && note.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -65,9 +81,9 @@ export function MainLayout() {
     updateNote({ id, isFavorite });
   };
   
-  const handlePasswordSet = (password: string | null) => {
+  const handlePasswordSet = (password: string | null, hideNote?: boolean) => {
     if (passwordNote) {
-      updateNote({ id: passwordNote.id, password });
+      updateNote({ id: passwordNote.id, password, isHidden: hideNote });
     }
     setPasswordNote(null);
   };
@@ -111,6 +127,7 @@ export function MainLayout() {
           onToggleFavorite={handleToggleFavorite}
           onSetPassword={setPasswordNote}
           onSetCategory={setCategoryNote}
+          onOpenVault={() => setVaultOpen(true)}
         />
   )
 
@@ -154,6 +171,7 @@ export function MainLayout() {
             onUpdateCategory={handleCategoryUpdate}
         />
       )}
+      <HiddenVault open={isVaultOpen} onOpenChange={setVaultOpen} />
     </>
   );
 }

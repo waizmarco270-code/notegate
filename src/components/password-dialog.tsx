@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -14,7 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "./ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Switch } from "./ui/switch";
 
 interface PasswordDialogProps {
   open: boolean;
@@ -23,7 +25,7 @@ interface PasswordDialogProps {
   noteId?: string;
   correctPassword?: string | null;
   onSuccess?: () => void;
-  onSetPassword?: (password: string | null) => void;
+  onSetPassword?: (password: string | null, hideNote?: boolean) => void;
 }
 
 export function PasswordDialog({
@@ -36,6 +38,7 @@ export function PasswordDialog({
 }: PasswordDialogProps) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [hideNote, setHideNote] = useState(false);
   const [error, setError] = useState("");
   const { toast } = useToast();
   
@@ -43,6 +46,7 @@ export function PasswordDialog({
     if (!open) {
       setPassword("");
       setConfirmPassword("");
+      setHideNote(false);
       setError("");
     }
   }, [open]);
@@ -69,12 +73,12 @@ export function PasswordDialog({
     setError("");
     setPassword("");
     setConfirmPassword("");
-    onSetPassword?.(password);
+    onSetPassword?.(password, hideNote);
     toast({ title: "Password set successfully." });
   };
   
   const handleRemove = () => {
-    onSetPassword?.(null);
+    onSetPassword?.(null, false);
     toast({ title: "Password removed." });
   }
 
@@ -123,18 +127,33 @@ export function PasswordDialog({
               />
             </div>
             {(mode === "set" || mode === "update") && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="confirm-password" className="text-right">
-                  Confirm
-                </Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  className="col-span-3"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-              </div>
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="confirm-password" className="text-right">
+                    Confirm
+                  </Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    className="col-span-3"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm mt-2">
+                    <div className="space-y-0.5">
+                        <Label htmlFor="hide-note">Move to Hidden Vault</Label>
+                        <p className="text-xs text-muted-foreground">
+                            Hide this note from the main list.
+                        </p>
+                    </div>
+                    <Switch
+                        id="hide-note"
+                        checked={hideNote}
+                        onCheckedChange={setHideNote}
+                    />
+                </div>
+              </>
             )}
             {error && <p className="text-destructive text-sm col-span-4 text-center">{error}</p>}
           </div>

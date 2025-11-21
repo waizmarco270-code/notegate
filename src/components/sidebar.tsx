@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useRef } from "react";
 import { Home, Plus, Search, Moon, Sun, Star, Briefcase, Lightbulb, ChevronDown, Folder, Settings, User, LogOut, Inbox, FilePlus } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ interface SidebarProps {
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   onSetPassword: (note: Note) => void;
   onSetCategory: (note: Note) => void;
+  onOpenVault: () => void;
 }
 
 export function Sidebar({ 
@@ -46,7 +48,8 @@ export function Sidebar({
   onDeleteNote,
   onToggleFavorite,
   onSetPassword,
-  onSetCategory
+  onSetCategory,
+  onOpenVault
 }: SidebarProps) {
   const { isDarkMode, setDarkMode, setOpenSettings } = useTheme();
   const { allCategories, setActiveNoteId, createNoteWithOptions } = useNotes();
@@ -55,6 +58,8 @@ export function Sidebar({
   const [isTranslateOpen, setTranslateOpen] = useState(false);
   const { user, auth } = useUser();
   const firestore = useFirestore();
+  const tapCount = useRef(0);
+  const tapTimer = useRef<NodeJS.Timeout | null>(null);
 
   const inboxQuery = useMemo(() => {
     if (!user || !firestore) return null;
@@ -91,12 +96,29 @@ export function Sidebar({
   const handleSaveAsNewNote = (title: string, content: string) => {
     createNoteWithOptions({ title, content });
   };
+  
+  const handleHeaderTap = () => {
+    tapCount.current += 1;
+
+    if (tapTimer.current) {
+      clearTimeout(tapTimer.current);
+    }
+
+    if (tapCount.current === 3) {
+      onOpenVault();
+      tapCount.current = 0;
+    } else {
+      tapTimer.current = setTimeout(() => {
+        tapCount.current = 0;
+      }, 500);
+    }
+  };
 
   return (
     <>
       <aside className="w-80 min-w-[320px] flex flex-col bg-background/50 p-4 space-y-4">
         <header className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" onTouchStart={handleHeaderTap}>
             <Image
               src="/logo.png"
               alt="NotesGate Logo"

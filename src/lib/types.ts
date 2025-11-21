@@ -15,6 +15,7 @@ export type Note = {
   updatedAt: string;
   password: string | null;
   isFavorite?: boolean;
+  isHidden?: boolean;
   history?: NoteVersion[];
 };
 

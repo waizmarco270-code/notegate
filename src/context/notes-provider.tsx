@@ -37,14 +37,19 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   const [userCategories, setUserCategories] = useLocalStorage<string[]>("categories", []);
   
   const activeNote = useMemo(() => {
-    return notes.find((n) => n.id === activeNoteId) ?? null;
+    const note = notes.find((n) => n.id === activeNoteId);
+    if (note && note.isHidden) {
+      return null;
+    }
+    return note ?? null;
   }, [notes, activeNoteId]);
   
   useEffect(() => {
     if (activeNoteId === null && notes.length > 0) {
-        const sortedNotes = [...notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-        // Do not automatically select a note if we are on the home screen
-        // setActiveNoteId(sortedNotes[0].id);
+        const visibleNotes = notes.filter(n => !n.isHidden);
+        if (visibleNotes.length > 0) {
+            const sortedNotes = [...visibleNotes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        }
     }
   }, [activeNoteId, notes]);
 
@@ -59,6 +64,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       updatedAt: new Date().toISOString(),
       password: null,
       isFavorite: false,
+      isHidden: false,
       history: [],
     };
     setNotes([newNote, ...notes]);
@@ -90,13 +96,19 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
             };
             newHistory = [historyEntry, ...newHistory].slice(0, MAX_HISTORY_LENGTH);
           }
-  
-          return {
+
+          const newNote = {
             ...originalNote,
             ...updatedFields,
             updatedAt: new Date().toISOString(),
             history: newHistory,
           };
+          
+          if (newNote.isHidden && activeNoteId === newNote.id) {
+            setActiveNoteId(null);
+          }
+
+          return newNote;
         }
         return note;
       })
@@ -107,8 +119,9 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     const remainingNotes = notes.filter((note) => note.id !== id);
     setNotes(remainingNotes);
     if (activeNoteId === id) {
-      if (remainingNotes.length > 0) {
-        const sorted = remainingNotes.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      const visibleNotes = remainingNotes.filter(n => !n.isHidden);
+      if (visibleNotes.length > 0) {
+        const sorted = visibleNotes.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
         setActiveNoteId(sorted[0].id);
       } else {
         setActiveNoteId(null);
@@ -140,11 +153,12 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   };
 
   const importData = (data: { notes: Note[]; categories: string[] }) => {
-    setNotes(data.notes.map(n => ({ ...n, history: n.history || [] })));
+    setNotes(data.notes.map(n => ({ ...n, history: n.history || [], isHidden: n.isHidden || false })));
     setUserCategories(data.categories);
     // After importing, set active note to the most recently updated one
-    if (data.notes.length > 0) {
-      const sorted = data.notes.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    const visibleNotes = data.notes.filter(n => !n.isHidden);
+    if (visibleNotes.length > 0) {
+      const sorted = visibleNotes.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
       setActiveNoteId(sorted[0].id);
     } else {
       setActiveNoteId(null);
@@ -157,10 +171,9 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     if (!noteExists) {
         const newNote: Note = {
             ...sharedNote,
-            // You might want to reset some properties, e.g., category or favorite status
             category: null,
             isFavorite: false,
-            // Ensure dates are in ISO format
+            isHidden: false,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             history: [],
@@ -168,7 +181,6 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         setNotes([newNote, ...notes]);
         setActiveNoteId(newNote.id);
     } else {
-        // If note already exists (e.g. shared back), maybe just activate it
         setActiveNoteId(sharedNote.id);
     }
   };
