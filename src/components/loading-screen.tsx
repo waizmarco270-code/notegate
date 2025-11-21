@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -49,7 +50,7 @@ export function LoadingScreen({ onSkip }: LoadingScreenProps) {
       <Button 
         variant="ghost" 
         onClick={onSkip}
-        className="absolute bottom-4 right-4 text-muted-foreground hover:text-foreground"
+        className="absolute top-10 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
       >
         Skip
       </Button>
