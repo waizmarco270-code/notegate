@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/context/theme-provider";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
-import { Download, Upload, AlertCircle, ShieldCheck } from "lucide-react";
+import { Download, Upload, AlertCircle, ShieldCheck, KeyRound } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -28,6 +28,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { PrivacyDialog } from "./privacy-dialog";
+import { SecretDevQuizDialog } from "./secret-dev-quiz-dialog";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { VipFeaturesDialog } from "./vip-features-dialog";
 
 export function SettingsDialog() {
   const { isDarkMode, setDarkMode, openSettings, setOpenSettings } = useTheme();
@@ -35,6 +38,13 @@ export function SettingsDialog() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPrivacyOpen, setPrivacyOpen] = useState(false);
+  const [isQuizOpen, setQuizOpen] = useState(false);
+  const [isVipOpen, setVipOpen] = useState(false);
+
+  const [devQuizStatus, setDevQuizStatus] = useLocalStorage<"not-attempted" | "passed" | "failed">(
+    "devQuizStatus",
+    "not-attempted"
+  );
 
   const handleExportData = () => {
     const dataToExport = {
@@ -48,7 +58,7 @@ export function SettingsDialog() {
     a.href = url;
     a.download = "legendary-notes-backup.json";
     document.body.appendChild(a);
-    a.click();
+a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast({ title: "Data exported successfully!" });
@@ -90,6 +100,14 @@ export function SettingsDialog() {
     // Reset file input
     if(event.target) event.target.value = '';
   };
+  
+  const handleSecretClick = () => {
+    if (devQuizStatus === 'passed') {
+      setVipOpen(true);
+    } else {
+      setQuizOpen(true);
+    }
+  }
 
   return (
     <>
@@ -163,7 +181,7 @@ export function SettingsDialog() {
             <Separator />
             
             <div className="space-y-4">
-              <Label>Privacy &amp; Security</Label>
+              <Label>About &amp; Security</Label>
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">Review the application's privacy policy.</p>
                 <Button variant="outline" size="sm" onClick={() => setPrivacyOpen(true)}>
@@ -171,12 +189,35 @@ export function SettingsDialog() {
                   View Privacy Policy
                 </Button>
               </div>
+              {devQuizStatus !== 'failed' && (
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">Discover legendary app secrets.</p>
+                  <Button variant="outline" size="sm" onClick={handleSecretClick}>
+                    <KeyRound className="mr-2 h-4 w-4" />
+                    {devQuizStatus === 'passed' ? 'View VIP Secrets' : 'Unlock Developer Secrets'}
+                  </Button>
+                </div>
+              )}
             </div>
 
           </div>
         </DialogContent>
       </Dialog>
       <PrivacyDialog open={isPrivacyOpen} onOpenChange={setPrivacyOpen} />
+      <SecretDevQuizDialog
+        open={isQuizOpen}
+        onOpenChange={setQuizOpen}
+        onSuccess={() => {
+          setDevQuizStatus('passed');
+          setQuizOpen(false);
+          setVipOpen(true);
+        }}
+        onFailure={() => {
+          setDevQuizStatus('failed');
+          setQuizOpen(false);
+        }}
+      />
+      <VipFeaturesDialog open={isVipOpen} onOpenChange={setVipOpen} />
     </>
   );
 }
