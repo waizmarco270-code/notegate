@@ -30,7 +30,7 @@ import {
 import { PrivacyDialog } from "./privacy-dialog";
 
 export function SettingsDialog() {
-  const { isDarkMode, setDarkMode, openSettings, setOpenSettings, isAnimationEnabled, setAnimationEnabled } = useTheme();
+  const { isDarkMode, setDarkMode, openSettings, setOpenSettings } = useTheme();
   const { notes, userCategories, importData } = useNotes();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -114,18 +114,6 @@ export function SettingsDialog() {
               />
             </div>
             
-            <div className="flex items-center justify-between">
-              <Label htmlFor="loading-animation" className="flex flex-col gap-1">
-                  <span>Loading Animation</span>
-                  <span className="text-xs text-muted-foreground">Enable or disable the startup animation.</span>
-              </Label>
-              <Switch
-                id="loading-animation"
-                checked={isAnimationEnabled}
-                onCheckedChange={setAnimationEnabled}
-              />
-            </div>
-
             <Separator />
 
             <div className="space-y-4">

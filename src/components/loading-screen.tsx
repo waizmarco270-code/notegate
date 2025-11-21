@@ -2,8 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { Button } from "./ui/button";
 
-export function LoadingScreen() {
+interface LoadingScreenProps {
+  onSkip: () => void;
+}
+
+export function LoadingScreen({ onSkip }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -40,6 +45,14 @@ export function LoadingScreen() {
           </p>
         </div>
       </div>
+      
+      <Button 
+        variant="ghost" 
+        onClick={onSkip}
+        className="absolute bottom-4 right-4 text-muted-foreground hover:text-foreground"
+      >
+        Skip
+      </Button>
 
       <div className="absolute bottom-10 text-center space-y-2">
          <p className="text-sm font-medium text-muted-foreground">Powered by EmityGate</p>

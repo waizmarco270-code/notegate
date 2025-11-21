@@ -12,8 +12,6 @@ interface ThemeContextType {
   setOpenSettings: (open: boolean) => void;
   isDarkMode: boolean;
   setDarkMode: (isDark: boolean) => void;
-  isAnimationEnabled: boolean;
-  setAnimationEnabled: (enabled: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -21,7 +19,6 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useLocalStorage<Theme>("theme", "light");
   const [openSettings, setOpenSettings] = useState(false);
-  const [isAnimationEnabled, setAnimationEnabled] = useLocalStorage<boolean>("animation-enabled", true);
 
   useEffect(() => {
       const root = window.document.documentElement;
@@ -42,8 +39,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setOpenSettings,
     isDarkMode,
     setDarkMode,
-    isAnimationEnabled,
-    setAnimationEnabled
   };
 
   return (
