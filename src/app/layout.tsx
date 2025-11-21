@@ -20,8 +20,11 @@ export default function RootLayout({
        <head>
         <link rel="icon" href="/logo.png" type="image/png" />
         <meta name="theme-color" content="#000000" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Belleza&display=swap" rel="stylesheet" />
       </head>
-      <body className="antialiased">
+      <body className="antialiased font-body">
         <FirebaseProvider>
           <Providers>{children}</Providers>
         </FirebaseProvider>
