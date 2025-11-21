@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -30,6 +30,7 @@ import { useTheme } from '@/context/theme-provider';
 import { AuthDialog } from './auth-dialog';
 import { InboxDialog } from './inbox-dialog';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface MobileSidebarProps {
   open: boolean;
@@ -51,6 +52,8 @@ export function MobileSidebar({
   const { setOpenSettings } = useTheme();
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
   const [isInboxOpen, setInboxOpen] = useState(false);
+  const tapCount = useRef(0);
+  const tapTimer = useRef<NodeJS.Timeout | null>(null);
 
   const getInitials = (name?: string | null) => {
     if (!name) return '...';
@@ -67,6 +70,24 @@ export function MobileSidebar({
     onOpenChange(false);
   };
   
+  const handleHeaderTap = () => {
+    tapCount.current += 1;
+
+    if (tapTimer.current) {
+      clearTimeout(tapTimer.current);
+    }
+
+    if (tapCount.current === 3) {
+      onOpenVault();
+      onOpenChange(false); // Close the sidebar after opening vault
+      tapCount.current = 0;
+    } else {
+      tapTimer.current = setTimeout(() => {
+        tapCount.current = 0;
+      }, 500);
+    }
+  };
+
   const categoryIcons: { [key: string]: React.ElementType } = {
     Personal: Home,
     Work: Briefcase,
@@ -94,7 +115,16 @@ export function MobileSidebar({
                 </div>
               </div>
             ) : (
-              <SheetTitle>Menu</SheetTitle>
+               <div className="flex items-center gap-2 cursor-pointer" onClick={handleHeaderTap}>
+                <Image
+                  src="/logo.png"
+                  alt="NotesGate Logo"
+                  width={28}
+                  height={28}
+                  className="rounded-md"
+                />
+                <h1 className="text-2xl font-bold text-foreground">NotesGate</h1>
+              </div>
             )}
           </SheetHeader>
           <div className="p-4 space-y-2">
@@ -156,9 +186,6 @@ export function MobileSidebar({
                 <Inbox className="mr-2 h-4 w-4" /> Inbox
               </Button>
             )}
-             <Button variant="ghost" className="w-full justify-start" onClick={onOpenVault}>
-                <KeyRound className="mr-2 h-4 w-4" /> Hidden Vault
-            </Button>
              <Button
               variant="ghost"
               className="w-full justify-start"

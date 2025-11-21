@@ -36,13 +36,15 @@ export function MainLayout() {
   const [activeMobileTab, setActiveMobileTab] = useState('home');
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const handleOpenVault = () => setVaultOpen(true);
+
   useEffect(() => {
     setIsClient(true);
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'h') {
         e.preventDefault();
-        setVaultOpen(true);
+        handleOpenVault();
       }
     };
 
@@ -80,6 +82,7 @@ export function MainLayout() {
     } else {
       setCategoryFilter(category);
     }
+    setActiveMobileTab('home'); // Switch to home tab on category selection
   };
 
   const handleToggleFavorite = (id: string, isFavorite: boolean) => {
@@ -128,7 +131,7 @@ export function MainLayout() {
           <main className="flex-1 overflow-y-auto p-4 pb-20">
             {activeMobileTab === 'home' && (
               <div className="animate-fade-in">
-                 <h1 className="text-2xl font-bold text-foreground mb-4">All Notes</h1>
+                 <h1 className="text-2xl font-bold text-foreground mb-4">{categoryFilter || 'All Notes'}</h1>
                 <NoteList
                   notes={filteredNotes}
                   activeNoteId={activeNote?.id ?? null}
@@ -175,7 +178,7 @@ export function MainLayout() {
           onOpenChange={setMobileMenuOpen}
           onOpenVault={() => {
             setMobileMenuOpen(false);
-            setVaultOpen(true);
+            handleOpenVault();
           }}
           onSelectCategory={(cat) => {
             handleSelectCategory(cat);
@@ -226,7 +229,7 @@ export function MainLayout() {
           onToggleFavorite={handleToggleFavorite}
           onSetPassword={setPasswordNote}
           onSetCategory={setCategoryNote}
-          onOpenVault={() => setVaultOpen(true)}
+          onOpenVault={handleOpenVault}
         />
         <main className="flex-1 flex flex-col overflow-auto">
           <NoteView key={activeNote?.id} onInitiateDelete={setNoteToDelete} />
