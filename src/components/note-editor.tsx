@@ -647,7 +647,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Untitled Note"
-            className="text-2xl md:text-4xl font-bold font-headline border-none shadow-none focus-visible:ring-0 p-0 h-auto w-full bg-transparent tracking-wide text-primary"
+            className="text-2xl font-bold font-headline border-none shadow-none focus-visible:ring-0 p-0 h-auto w-full bg-transparent tracking-wide text-primary"
           />
            <div className="absolute bottom-0 left-0 h-0.5 w-full bg-transparent group-focus-within:bg-gradient-to-r from-transparent via-primary to-transparent group-focus-within:animate-underline-grow" />
         </div>
