@@ -8,13 +8,13 @@ interface NoteListProps {
   notes: Note[];
   activeNoteId: string | null;
   onSelectNote: (id: string) => void;
-  onDeleteNote: (id: string) => void;
+  onInitiateDelete: (note: Note) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   onSetPassword: (note: Note) => void;
   onSetCategory: (note: Note) => void;
 }
 
-export function NoteList({ notes, activeNoteId, onSelectNote, onDeleteNote, onToggleFavorite, onSetPassword, onSetCategory }: NoteListProps) {
+export function NoteList({ notes, activeNoteId, onSelectNote, onInitiateDelete, onToggleFavorite, onSetPassword, onSetCategory }: NoteListProps) {
   return (
     <ScrollArea className="flex-1 -mx-4">
       <div className="px-4 space-y-1">
@@ -25,7 +25,7 @@ export function NoteList({ notes, activeNoteId, onSelectNote, onDeleteNote, onTo
               note={note}
               isActive={note.id === activeNoteId}
               onClick={() => onSelectNote(note.id)}
-              onDelete={onDeleteNote}
+              onInitiateDelete={onInitiateDelete}
               onToggleFavorite={onToggleFavorite}
               onSetPassword={onSetPassword}
               onSetCategory={onSetCategory}

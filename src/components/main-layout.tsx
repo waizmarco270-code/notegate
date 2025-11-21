@@ -10,9 +10,10 @@ import { ManageCategoriesDialog } from './manage-categories-dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { HiddenVault } from './hidden-vault';
 import { MobileBottomNav } from './mobile-bottom-nav';
-import { Search, Plus } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from './ui/input';
 import { NoteList } from './note-list';
+import { DeleteNoteDialog } from './delete-note-dialog';
 
 export function MainLayout() {
   const {
@@ -29,6 +30,7 @@ export function MainLayout() {
   const [passwordNote, setPasswordNote] = useState<Note | null>(null);
   const [categoryNote, setCategoryNote] = useState<Note | null>(null);
   const [isVaultOpen, setVaultOpen] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
   const isMobile = useIsMobile();
   const [activeMobileTab, setActiveMobileTab] = useState('home');
 
@@ -98,6 +100,13 @@ export function MainLayout() {
   const handleSelectNote = (id: string) => {
     setActiveNoteId(id);
   };
+  
+  const handleConfirmDelete = () => {
+    if (noteToDelete) {
+      deleteNote(noteToDelete.id);
+      setNoteToDelete(null);
+    }
+  };
 
   if (!isClient) {
     return null;
@@ -122,7 +131,7 @@ export function MainLayout() {
                   notes={filteredNotes}
                   activeNoteId={activeNote?.id ?? null}
                   onSelectNote={handleSelectNote}
-                  onDeleteNote={deleteNote}
+                  onInitiateDelete={setNoteToDelete}
                   onToggleFavorite={handleToggleFavorite}
                   onSetPassword={setPasswordNote}
                   onSetCategory={setCategoryNote}
@@ -145,7 +154,7 @@ export function MainLayout() {
                   notes={filteredNotes}
                   activeNoteId={null}
                   onSelectNote={handleSelectNote}
-                  onDeleteNote={deleteNote}
+                  onInitiateDelete={setNoteToDelete}
                   onToggleFavorite={handleToggleFavorite}
                   onSetPassword={setPasswordNote}
                   onSetCategory={setCategoryNote}
@@ -175,6 +184,12 @@ export function MainLayout() {
           />
         )}
         <HiddenVault open={isVaultOpen} onOpenChange={setVaultOpen} />
+         <DeleteNoteDialog
+            open={!!noteToDelete}
+            onOpenChange={(isOpen) => !isOpen && setNoteToDelete(null)}
+            note={noteToDelete}
+            onConfirmDelete={handleConfirmDelete}
+        />
       </>
     );
   }
@@ -191,14 +206,14 @@ export function MainLayout() {
           onSearchTermChange={setSearchTerm}
           onSelectCategory={handleSelectCategory}
           activeCategory={categoryFilter}
-          onDeleteNote={deleteNote}
+          onInitiateDelete={setNoteToDelete}
           onToggleFavorite={handleToggleFavorite}
           onSetPassword={setPasswordNote}
           onSetCategory={setCategoryNote}
           onOpenVault={() => setVaultOpen(true)}
         />
         <main className="flex-1 flex flex-col overflow-auto">
-          <NoteView key={activeNote?.id} />
+          <NoteView key={activeNote?.id} onInitiateDelete={setNoteToDelete} />
         </main>
       </div>
       {passwordNote && (
@@ -218,6 +233,12 @@ export function MainLayout() {
         />
       )}
       <HiddenVault open={isVaultOpen} onOpenChange={setVaultOpen} />
+       <DeleteNoteDialog
+            open={!!noteToDelete}
+            onOpenChange={(isOpen) => !isOpen && setNoteToDelete(null)}
+            note={noteToDelete}
+            onConfirmDelete={handleConfirmDelete}
+        />
     </>
   );
 }

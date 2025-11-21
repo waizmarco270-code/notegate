@@ -9,8 +9,14 @@ import { Lock, Plus, Settings, Sparkles, FileText, Lightbulb } from "lucide-reac
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useTheme } from "@/context/theme-provider";
+import type { Note } from "@/lib/types";
 
-export function NoteView() {
+
+interface NoteViewProps {
+  onInitiateDelete?: (note: Note) => void;
+}
+
+export function NoteView({ onInitiateDelete }: NoteViewProps) {
   const { activeNote, setActiveNoteId, createNote } = useNotes();
   const { setOpenSettings } = useTheme();
   const [unlocked, setUnlocked] = useState(false);
@@ -42,6 +48,13 @@ export function NoteView() {
     }
     setShowPasswordDialog(isOpen);
   }
+  
+  const handleInitiateDelete = (note: Note) => {
+    if(onInitiateDelete) {
+      onInitiateDelete(note);
+    }
+  }
+
 
   if (!activeNote) {
     return (
@@ -134,5 +147,5 @@ export function NoteView() {
     );
   }
 
-  return <div className="h-full w-full p-0 md:p-4"><NoteEditor note={activeNote} /></div>;
+  return <div className="h-full w-full p-0 md:p-4"><NoteEditor note={activeNote} onInitiateDelete={handleInitiateDelete} /></div>;
 }

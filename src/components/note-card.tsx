@@ -11,13 +11,13 @@ interface NoteCardProps {
   note: Note;
   isActive: boolean;
   onClick: () => void;
-  onDelete: (id: string) => void;
+  onInitiateDelete: (note: Note) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   onSetPassword: (note: Note) => void;
   onSetCategory: (note: Note) => void;
 }
 
-export function NoteCard({ note, isActive, onClick, onDelete, onToggleFavorite, onSetPassword, onSetCategory }: NoteCardProps) {
+export function NoteCard({ note, isActive, onClick, onInitiateDelete, onToggleFavorite, onSetPassword, onSetCategory }: NoteCardProps) {
 
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -65,7 +65,7 @@ export function NoteCard({ note, isActive, onClick, onDelete, onToggleFavorite, 
                 <Folder className="mr-2 h-4 w-4" />
                 <span>Set Category</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onDelete(note.id)} className="text-destructive focus:text-destructive">
+            <DropdownMenuItem onSelect={() => onInitiateDelete(note)} className="text-destructive focus:text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />
               <span>Delete</span>
             </DropdownMenuItem>

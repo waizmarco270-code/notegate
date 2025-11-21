@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Star, MoreVertical, Folder, Copy, TextSelect, FileDown, Trash2, Sparkles, Lock, Unlock, Tag, Share2, History, Plus, Ear, Languages, Replace, Loader2, PanelRightClose, X, Users, Wand2 } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import type { Note } from "@/lib/types";
@@ -38,20 +38,20 @@ import { debounce } from "lodash";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { WhatsappLogo } from "./icons";
 import { LinkPopover } from "./link-popover";
 
 interface NoteEditorProps {
   note: Note;
+  onInitiateDelete: (note: Note) => void;
 }
 
 const supportedLanguages = [
   { name: "English", premium: false }, { name: "Spanish", premium: false }, { name: "French", premium: false }, { name: "German", premium: false }, { name: "Hindi", premium: false }, { name: "Hinglish", premium: true }, { name: "Arabic", premium: false }, { name: "Mandarin Chinese", premium: false }, { name: "Japanese", premium: false }, { name: "Russian", premium: false }, { name: "Portuguese", premium: false },
 ];
 
-export function NoteEditor({ note }: NoteEditorProps) {
-  const { updateNote, deleteNote, notes, setActiveNoteId } = useNotes();
+export function NoteEditor({ note, onInitiateDelete }: NoteEditorProps) {
+  const { updateNote, notes, setActiveNoteId } = useNotes();
   const { toast } = useToast();
   const { user } = useUser();
   const [title, setTitle] = useState(note.title);
@@ -744,29 +744,13 @@ export function NoteEditor({ note }: NoteEditorProps) {
                         <span>Export as HTML</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <DropdownMenuItem 
-                                className="text-destructive focus:text-destructive"
-                                onSelect={(e) => e.preventDefault()}
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                <span>Delete Note</span>
-                            </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This will permanently delete the note. This action cannot be undone.
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteNote(note.id)}>Delete</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                     <DropdownMenuItem 
+                        className="text-destructive focus:text-destructive"
+                        onSelect={() => onInitiateDelete(note)}
+                    >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Delete Note</span>
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>

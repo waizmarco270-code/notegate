@@ -29,7 +29,7 @@ interface SidebarProps {
   onSearchTermChange: (term: string) => void;
   onSelectCategory: (category: string | null) => void;
   activeCategory: string | null;
-  onDeleteNote: (id: string) => void;
+  onInitiateDelete: (note: Note) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   onSetPassword: (note: Note) => void;
   onSetCategory: (note: Note) => void;
@@ -45,7 +45,7 @@ export function Sidebar({
   onSearchTermChange, 
   onSelectCategory, 
   activeCategory,
-  onDeleteNote,
+  onInitiateDelete,
   onToggleFavorite,
   onSetPassword,
   onSetCategory,
@@ -257,7 +257,7 @@ export function Sidebar({
           notes={notes} 
           activeNoteId={activeNoteId} 
           onSelectNote={onSelectNote}
-          onDeleteNote={onDeleteNote}
+          onInitiateDelete={onInitiateDelete}
           onToggleFavorite={onToggleFavorite}
           onSetPassword={onSetPassword}
           onSetCategory={onSetCategory}
