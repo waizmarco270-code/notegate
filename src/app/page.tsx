@@ -6,21 +6,30 @@ import { SettingsDialog } from "@/components/settings-dialog";
 import { LoadingScreen } from "@/components/loading-screen";
 import { WelcomeDialog } from "@/components/welcome-dialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { useTheme } from "@/context/theme-provider";
 
 export default function Home() {
-  const [loading, setLoading] = useState(true);
+  const { isAnimationEnabled } = useTheme();
+  const [loading, setLoading] = useState(isAnimationEnabled);
   const [hasVisited, setHasVisited] = useLocalStorage("hasVisited", false);
   const [isWelcomeOpen, setWelcomeOpen] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (isAnimationEnabled) {
+      const timer = setTimeout(() => {
+        setLoading(false);
+        if (!hasVisited) {
+          setWelcomeOpen(true);
+        }
+      }, 3000);
+      return () => clearTimeout(timer);
+    } else {
       setLoading(false);
       if (!hasVisited) {
         setWelcomeOpen(true);
       }
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [hasVisited]);
+    }
+  }, [hasVisited, isAnimationEnabled]);
 
   const handleWelcomeClose = () => {
     setWelcomeOpen(false);
