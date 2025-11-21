@@ -14,6 +14,7 @@ import { Search } from 'lucide-react';
 import { Input } from './ui/input';
 import { NoteList } from './note-list';
 import { DeleteNoteDialog } from './delete-note-dialog';
+import { MobileSidebar } from './mobile-sidebar';
 
 export function MainLayout() {
   const {
@@ -33,6 +34,7 @@ export function MainLayout() {
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
   const isMobile = useIsMobile();
   const [activeMobileTab, setActiveMobileTab] = useState('home');
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -165,8 +167,22 @@ export function MainLayout() {
           <MobileBottomNav
             activeTab={activeMobileTab}
             setActiveTab={setActiveMobileTab}
+            onMenuClick={() => setMobileMenuOpen(true)}
           />
         </div>
+         <MobileSidebar
+          open={isMobileMenuOpen}
+          onOpenChange={setMobileMenuOpen}
+          onOpenVault={() => {
+            setMobileMenuOpen(false);
+            setVaultOpen(true);
+          }}
+          onSelectCategory={(cat) => {
+            handleSelectCategory(cat);
+            setMobileMenuOpen(false);
+          }}
+          activeCategory={categoryFilter}
+        />
         {passwordNote && (
           <PasswordDialog
             open={!!passwordNote}

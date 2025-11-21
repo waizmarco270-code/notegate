@@ -2,7 +2,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Home, Plus, Search, Moon, Sun, Star, Briefcase, Lightbulb, ChevronDown, Folder, Settings, User, LogOut, Inbox, FilePlus } from "lucide-react";
+import { Home, Plus, Search, Moon, Sun, Star, Briefcase, Lightbulb, ChevronDown, Folder, Settings, User, LogOut, Inbox, FilePlus, KeyRound } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -118,7 +118,7 @@ export function Sidebar({
     <>
       <aside className="w-80 min-w-[320px] flex flex-col bg-background/50 p-4 space-y-4">
         <header className="flex items-center justify-between">
-          <div className="flex items-center gap-2" onTouchStart={handleHeaderTap} onClick={handleHeaderTap}>
+          <div className="flex items-center gap-2 cursor-pointer" onClick={handleHeaderTap}>
             <Image
               src="/logo.png"
               alt="NotesGate Logo"
@@ -191,11 +191,18 @@ export function Sidebar({
 
         <nav className="flex flex-col gap-1">
           <Button 
-              variant={"ghost"}
+              variant={activeCategory === null ? "secondary" : "ghost"}
               className="w-full justify-start"
-              onClick={handleGoHome}
+              onClick={() => onSelectCategory("All Notes")}
             >
-              <Home className="mr-2 h-4 w-4" /> Home
+              <Folder className="mr-2 h-4 w-4" /> All Notes
+          </Button>
+           <Button 
+              variant={activeCategory === "Favorites" ? "secondary" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => onSelectCategory("Favorites")}
+            >
+              <Star className="mr-2 h-4 w-4" /> Favorites
           </Button>
           {user && (
             <Button
@@ -212,13 +219,6 @@ export function Sidebar({
               )}
             </Button>
           )}
-          <Button 
-              variant={activeCategory === null ? "secondary" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => onSelectCategory("All Notes")}
-            >
-              <Folder className="mr-2 h-4 w-4" /> All Notes
-          </Button>
           <DropdownMenu>
               <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="w-full justify-start">
@@ -227,14 +227,6 @@ export function Sidebar({
               </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-              <DropdownMenuItem 
-                onClick={() => onSelectCategory("Favorites")}
-                className={cn(activeCategory === "Favorites" && "bg-secondary")}
-              >
-                  <Star className="mr-2 h-4 w-4" />
-                  Favorites
-              </DropdownMenuItem>
-              {allCategories.length > 0 && <DropdownMenuSeparator />}
               {allCategories.map(category => {
                   const Icon = categoryIcons[category] || Folder;
                   return (
@@ -250,6 +242,9 @@ export function Sidebar({
               })}
               </DropdownMenuContent>
           </DropdownMenu>
+           <Button variant="ghost" className="w-full justify-start" onClick={onOpenVault}>
+                <KeyRound className="mr-2 h-4 w-4" /> Hidden Vault
+            </Button>
         </nav>
         
 
