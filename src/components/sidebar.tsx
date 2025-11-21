@@ -118,7 +118,7 @@ export function Sidebar({
     <>
       <aside className="w-80 min-w-[320px] flex flex-col bg-background/50 p-4 space-y-4">
         <header className="flex items-center justify-between">
-          <div className="flex items-center gap-2" onTouchStart={handleHeaderTap}>
+          <div className="flex items-center gap-2" onTouchStart={handleHeaderTap} onClick={handleHeaderTap}>
             <Image
               src="/logo.png"
               alt="NotesGate Logo"
