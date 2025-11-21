@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,15 +10,27 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { Eye, EyeOff, ShieldCheck, Lock } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, Lock, QrCode, Download, AlertTriangle } from "lucide-react";
 import { useNotes } from "@/context/notes-provider";
 import { NoteList } from "./note-list";
 import { NoteView } from "./note-view";
+import QRCode from "qrcode.react";
 
 interface HiddenVaultProps {
   open: boolean;
@@ -33,6 +45,7 @@ export function HiddenVault({ open, onOpenChange }: HiddenVaultProps) {
   const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
   const [error, setError] = useState("");
   const { toast } = useToast();
+  const qrCodeRef = useRef<HTMLDivElement>(null);
 
   const { notes, activeNote, setActiveNoteId, deleteNote, updateNote } = useNotes();
   const hiddenNotes = notes.filter(note => note.isHidden);
@@ -89,6 +102,25 @@ export function HiddenVault({ open, onOpenChange }: HiddenVaultProps) {
     }
   };
 
+  const handleDownloadQR = () => {
+    const canvas = qrCodeRef.current?.querySelector('canvas');
+    if (canvas) {
+      const pngUrl = canvas
+        .toDataURL("image/png")
+        .replace("image/png", "image/octet-stream");
+      let downloadLink = document.createElement("a");
+      downloadLink.href = pngUrl;
+      downloadLink.download = "notesgate-vault-password-qr.png";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      toast({
+        title: "QR Code Downloaded",
+        description: "Please store it in a safe place like Google Drive.",
+      });
+    }
+  };
+
   const handleUnhideNote = (id: string) => {
     updateNote({ id, isHidden: false });
   };
@@ -142,10 +174,42 @@ export function HiddenVault({ open, onOpenChange }: HiddenVaultProps) {
                 )}
                 {error && <p className="text-sm text-center text-destructive">{error}</p>}
               </div>
-              <DialogFooter className="mt-6">
+              <DialogFooter className="mt-6 flex-col sm:flex-col sm:space-x-0 gap-2">
                 <Button type="submit" className="w-full">
                   {isSettingPassword ? "Set Password & Enter" : "Unlock"}
                 </Button>
+                {isSettingPassword && (
+                   <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button type="button" variant="outline" className="w-full" disabled={!passwordInput || passwordInput !== confirmPasswordInput}>
+                        <QrCode className="h-4 w-4 mr-2" />
+                        Generate QR Code Backup
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2">
+                          <AlertTriangle className="h-5 w-5 text-destructive" />
+                          Security Warning
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This QR code contains your vault password. Anyone who scans it can access your vault. Store it somewhere safe and private, like your personal cloud storage.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                       <div className="flex flex-col items-center justify-center gap-4 py-4" ref={qrCodeRef}>
+                          <QRCode value={passwordInput} size={256} level="H" />
+                          <p className="text-sm font-mono p-2 bg-muted rounded-md">{passwordInput}</p>
+                       </div>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Close</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDownloadQR}>
+                           <Download className="h-4 w-4 mr-2" />
+                           Download QR Code
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </DialogFooter>
             </form>
           </div>
