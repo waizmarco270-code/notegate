@@ -79,7 +79,7 @@ export function SecretDevQuizDialog({ open, onOpenChange, onSuccess, onFailure }
     return (
        <Dialog open={open} onOpenChange={resetDialog}>
         <DialogContent>
-            <AlertDialog open={true} onOpenChange={(isOpen) => !isOpen && resetDialog()}>
+            <AlertDialog defaultOpen={true}>
                 <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle className="flex items-center gap-2">
